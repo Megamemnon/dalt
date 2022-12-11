@@ -578,7 +578,7 @@ def loadTheory(filename, language):
 
 def main():
   global DEBUG, DEFAULTTHEORYFILE, theoryfile
-  print(f'{BLUE}Calculus of Calculi 0.1\nCopyright (c) 2022 Brian O\'Dell{RESET}')
+  print(f'{BLUE}DALT 0.2\nCopyright (c) 2022 Brian O\'Dell{RESET}')
   if DEBUG:
     t=DEFAULTTHEORYFILE
   else:
