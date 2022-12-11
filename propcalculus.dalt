@@ -1,0 +1,117 @@
+THEORY Propostitional Calculus
+
+# Begin with Propostitional and Predicate Calculus axioms and prove some useful Lemmas/Theorems 
+
+DEF Phi                     -- φ
+DEF Psi                     -- ψ
+DEF Kappa                   -- χ
+DEF Theta                   -- θ
+
+AXIOM ax-1                  -- φ→(ψ→φ)
+AXIOM ax-2                  -- φ→(ψ→χ)→((φ→ψ)→(φ→χ))
+AXIOM ax-3                  -- ((¬φ)→(¬ψ))→(ψ→φ)
+AXIOM ax-mp                 -- ψ
+  HYPOTHESIS                -- φ
+  HYPOTHESIS                -- φ→ψ
+
+LEMMA a1i                   -- (ψ→φ)
+  HYPOTHESIS                -- φ
+  AXIOM ax-1                -- φ→(ψ→φ)
+  AXIOM ax-mp 1 2           -- (ψ→φ)
+  QED
+
+LEMMA a2i                   -- ((φ→ψ)→(φ→χ))
+  HYPOTHESIS                -- φ→(ψ→χ)
+  AXIOM ax-2                -- φ→(ψ→χ)→((φ→ψ)→(φ→χ))
+  AXIOM ax-mp 1 2           -- ((φ→ψ)→(φ→χ))
+  QED
+
+LEMMA imim2i                -- (χ→φ)→(χ→ψ)
+  HYPOTHESIS                -- (φ→ψ)
+  LEMMA a1i 1               -- χ→(φ→ψ)
+  LEMMA a2i 2               -- (χ→φ)→(χ→ψ)
+  QED
+
+THEOREM mpd                 -- (φ→χ)
+  HYPOTHESIS                -- (φ→ψ)
+  HYPOTHESIS                -- (φ→(ψ→χ))
+  LEMMA a2i 2               -- ((φ→ψ)→(φ→χ))
+  AXIOM ax-mp 1 3           -- (φ→χ)
+  QED
+
+THEOREM syl                 -- (φ→χ)
+  HYPOTHESIS                -- (φ→ψ)
+  HYPOTHESIS                -- (ψ→χ)
+  LEMMA a1i 2               -- φ→(ψ→χ)
+  THEOREM mpd 1 3           -- (φ→χ)
+  QED
+
+LEMMA a1d                   -- φ→(χ→ψ)
+  HYPOTHESIS                -- (φ→ψ)
+  AXIOM ax-1                -- ψ→(χ→ψ)
+  THEOREM syl 1 2           -- φ→(χ→ψ)
+  QED
+
+LEMMA sylcom                -- φ→(ψ→θ)
+  HYPOTHESIS                -- φ→(ψ→χ)
+  HYPOTHESIS                -- ψ→(χ→θ)
+  LEMMA a2i 2               -- ((ψ→χ)→(ψ→θ))
+  THEOREM syl 1 3           -- φ→(ψ→θ)
+  QED
+
+LEMMA syl5com               -- φ→(χ→θ)
+  HYPOTHESIS                -- (φ→ψ)
+  LEMMA a1d 1               -- (φ→(χ→ψ))
+  HYPOTHESIS                -- χ→(ψ→θ)
+  LEMMA sylcom 2 3          -- φ→(χ→θ)  
+  QED
+
+THEOREM id                  -- φ→φ
+  AXIOM ax-1                -- φ→(φ→φ)
+  AXIOM ax-1                -- φ→((φ→φ)→φ)
+  THEOREM mpd 1 2           -- φ→φ
+  QED
+
+LEMMA com12                 -- ψ→(φ→χ)
+  THEOREM id                -- ψ→ψ
+  HYPOTHESIS                -- φ→(ψ→χ)
+  LEMMA syl5com 1 2         -- ψ→(φ→χ)
+  QED
+
+LEMMA syl5                  -- χ→(φ→θ)
+  HYPOTHESIS                -- φ→ψ
+  HYPOTHESIS                -- χ→(ψ→θ)
+  LEMMA syl5com 1 2         -- φ→(χ→θ)
+  LEMMA com12 3             -- χ→(φ→θ)
+  QED
+
+LEMMA imim12i               -- (ψ→χ)→(φ→θ)
+  HYPOTHESIS                -- φ→ψ
+  HYPOTHESIS                -- χ→θ
+  LEMMA imim2i 2            -- (ψ→χ)→(ψ→θ)
+  LEMMA syl5 1 3            -- (ψ→χ)→(φ→θ)
+  QED
+
+LEMMA imim1i                -- (ψ→χ)→(φ→χ)
+  HYPOTHESIS                -- φ→ψ
+  THEOREM id                -- χ→χ
+  LEMMA imim12i 1 2         -- (ψ→χ)→(φ→χ)
+  QED
+
+LEMMA jar                   -- ((φ→ψ)→χ)→(ψ→χ)
+  AXIOM ax-1                -- ψ→(φ→ψ)
+  LEMMA imim1i 1            -- ((φ→ψ)→χ)→(ψ→χ)
+  QED
+
+LEMMA a2d                   -- φ→((ψ→χ)→(ψ→θ))
+  HYPOTHESIS                -- φ→(ψ→(χ→θ))
+  AXIOM ax-2                -- (ψ→(χ→θ))→((ψ→χ)→(ψ→θ))
+  THEOREM syl 1 2           -- φ→((ψ→χ)→(ψ→θ))
+  QED
+
+THEOREM minimp              -- φ→((ψ→χ)→(((θ→ψ)→(χ→τ))→(ψ→τ)))
+  LEMMA jar                 -- ((θ→ψ)→(χ→τ))→(ψ→(χ→τ))
+  LEMMA a2d 1               -- ((θ→ψ)→(χ→τ))→((ψ→χ)→(ψ→τ))
+  LEMMA com12 2             -- (ψ→χ)→(((θ→ψ)→(χ→τ))→(ψ→τ))
+  LEMMA a1i 3               -- φ→((ψ→χ)→(((θ→ψ)→(χ→τ))→(ψ→τ)))
+  QED
