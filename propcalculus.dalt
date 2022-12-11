@@ -1,6 +1,9 @@
 THEORY Propostitional Calculus
 
-# Begin with Propostitional and Predicate Calculus axioms and prove some useful Lemmas/Theorems 
+# Axioms and Lemmas/Theorems from the Metamath project 
+# Metamath indicates its content is Public Domain
+# Thanks to Metamath contributers!
+# https://us.metamath.org/mpeuni/mmtheorems.html#mmdtoc 
 
 DEF Phi                     -- φ
 DEF Psi                     -- ψ
@@ -115,3 +118,4 @@ THEOREM minimp              -- φ→((ψ→χ)→(((θ→ψ)→(χ→τ))→(ψ�
   LEMMA com12 2             -- (ψ→χ)→(((θ→ψ)→(χ→τ))→(ψ→τ))
   LEMMA a1i 3               -- φ→((ψ→χ)→(((θ→ψ)→(χ→τ))→(ψ→τ)))
   QED
+  
