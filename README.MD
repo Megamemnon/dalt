@@ -24,23 +24,26 @@ The example file projcalculus.dalt, included with this package, defines the basi
 
 To begin a DALT file, you should name your Theory, using the THEORY keyword.
 
-> THEORY Propositional Calculus
+<pre>
+THEORY Propositional Calculus
+</pre>
 
 Any line that begins with '#' is a comment and ignored by the interpreter. Whole line comments are the only type of comment supported by DALT.
 
 ### Definitions and Axioms
 
 Use the DEF keyword to introduce a Definition and the AXIOM keyword to introduce an Axiom. Note the double dash and space ("-- ") identifies the beginning of the formula for the interpreter.
+<pre>
+DEF Phi                     -- φ  
+DEF Psi                     -- ψ  
 
->DEF Phi                     -- φ  
->DEF Psi                     -- ψ  
->AXIOM ax-1                  -- φ→(ψ→φ)  
->AXIOM ax-2                  -- φ→(ψ→χ)→((φ→ψ)→(φ→χ))  
->AXIOM ax-3                  -- ((¬φ)→(¬ψ))→(ψ→φ)  
->AXIOM ax-mp                 -- ψ  
->  HYPOTHESIS                -- φ  
->  HYPOTHESIS                -- φ→ψ  
-
+AXIOM ax-1                  -- φ→(ψ→φ)  
+AXIOM ax-2                  -- φ→(ψ→χ)→((φ→ψ)→(φ→χ))  
+AXIOM ax-3                  -- ((¬φ)→(¬ψ))→(ψ→φ)  
+AXIOM ax-mp                 -- ψ  
+  HYPOTHESIS                -- φ  
+  HYPOTHESIS                -- φ→ψ  
+</pre>
 AXIOM statements may be followed by one or more HYPOTHESIS statements. These statements should be indented. When an Axiom is used in a Lemma or Theorem, each Hypothesis for the Axiom must be fulfilled. This is described in the following section.
 
 ### Lemmas and Theorems
@@ -49,11 +52,13 @@ Lemmas and Theorems are treated identically by the interpreter. It's up to you t
 
 A Lemma or Theorem begins with an identifying line and is followed by a proof. All proofs end with QED, which tells the interpreter the proof is finished.
 
->LEMMA a1i                   -- (ψ→φ)  
->  HYPOTHESIS                -- φ  
->  AXIOM ax-1                -- φ→(ψ→φ)  
->  AXIOM ax-mp 1 2           -- (ψ→φ)  
->  QED  
+<pre>
+LEMMA a1i                   -- (ψ→φ)  
+  HYPOTHESIS                -- φ  
+  AXIOM ax-1                -- φ→(ψ→φ)  
+  AXIOM ax-mp 1 2           -- (ψ→φ)  
+  QED  
+</pre>
 
 Let's examine the above Lemma line by line:  
 
