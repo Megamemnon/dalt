@@ -140,6 +140,25 @@ class ASTNode():
       unifier.extend(r)
     return unifier
 
+  def replaceVariable(self, var, newNode):
+    l=False
+    r=False
+    if self.left is not None:
+      if self.left.nodetype==TokenType.variable and self.left.symbol==var:
+        self.left=newNode
+        l=True
+      else:
+        l=self.left.replaceVariable(var, newNode)
+    if self.right is not None:
+      if self.right.nodetype==TokenType.variable and self.right.symbol==var:
+        self.right=newNode
+        r=True
+      else:
+        r=self.right.replaceVariable(var, newNode)
+    if l or r:
+      return True
+    return False
+
 def getUnifierString(unifier):
   u='{'
   for c,var in enumerate(unifier):
@@ -576,6 +595,80 @@ def loadTheory(filename, language):
     i+=1
   return theory
 
+def repl(theory, language):
+  userstr=''
+  formula=[]
+  while userstr!='exit':
+    userstr=input(']')
+    ustr=userstr.split()
+    match ustr[0]:
+      case 'l'|'list':
+        for c, f in enumerate(formula):
+          print(f'{c+1}: {f}')
+      case 'c'|'clear':
+        formula=[]
+      case 'h'|'hypothesis':
+        formula.append(userstr[len(ustr):].strip())
+      case 'a'|'axiom'|'d'|'def'|'l'|'lemma'|'t'|'theorem':
+        match ustr[0][0]:
+          case 'a':
+            postulatetype='AXIOMS'
+          case 'd':
+            postulatetype='DEFS'
+          case 'l':
+            postulatetype='LEMMAS'
+          case 't':
+            postulatetype='THEOREMS'
+        postulatename=ustr[1]
+        if postulatename not in theory[postulatetype]:
+          print(f'# {RED}ERROR{RESET}:{postulatename} not found in {postulatetype} dictionary')
+          continue
+        postulateentry=theory[postulatetype][postulatename]
+        postulateformula=postulateentry[0]
+        postulateast=formulaToAST(postulateformula, language)
+        if postulateast is None:
+          print(f'# {RED}ERROR{RESET}:{postulatename} {colorizeFormula(postulateformula)} cannot be parsed')
+          continue
+        postulateformula=postulateast.getFormula(False)
+        if len(postulateentry)>1:
+          try:
+            postulatesteps=postulateentry[1]
+            steprefs=ustr[2:]
+            pstep=0
+            unifier=[]
+            for h in postulatesteps:
+              if h[0]=='HYPOTHESIS':
+                x=int(steprefs[pstep])-1
+                refformula=formula[x]
+                refformulaast=formulaToAST(refformula, language)
+                posformulaast=formulaToAST(h[1], language)
+                if not posformulaast.equivalent(refformulaast):
+                  print(f'# {RED}ERROR{RESET} proof step {int(steprefs[pstep]-1)} is not equivalent to {h[1]}')
+                  continue
+                un=posformulaast.unify(refformulaast)
+                if un is None:
+                  print(f'# {RED}ERROR{RESET} {refformula} cannot be unified with {h[1]}')
+                  continue
+                unifier.extend(un)
+                pstep+=1
+            uerrors=getUnifierErrors(unifier)
+            if uerrors!=[]:
+              ue=getUnifierString(uerrors)
+              print(f'# {RED}ERROR{RESET} Inconsistent Unifiers between Hypothesis(es) and provided Formula: {ue}')
+              continue
+          except:
+            print(f'# {RED}ERROR{RESET} Unable to process proof steps')
+          for u in unifier:
+            if postulateast.nodetype==TokenType.variable and postulateast.symbol==u[1].symbol:
+              postulateast=u[0]
+              break
+            else:
+              postulateast.replaceVariable(u[1].symbol, u[0])
+          postulateformula=postulateast.getFormula(False)
+        formula.append(postulateformula)
+
+    
+
 def main():
   global DEBUG, DEFAULTTHEORYFILE, theoryfile
   print(f'{BLUE}DALT 0.2\nCopyright (c) 2022 Brian O\'Dell{RESET}')
@@ -595,7 +688,8 @@ def main():
       sys.exit(1)
     t=sys.argv[2][7:]
   theoryfile=t
-  loadTheory(theoryfile, LANGUAGE)
+  theory=loadTheory(theoryfile, LANGUAGE)
+  repl(theory, LANGUAGE)
 
 if __name__=='__main__':
   main()

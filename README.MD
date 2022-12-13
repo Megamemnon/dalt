@@ -11,6 +11,8 @@ The DALT proof strategy is to add formula to your proof from earlier postulated 
 
 After writing up a Theory in a DALT file, you run the DALT application to validate the theory. Application output is also in the form of a DALT file and comments are included describing any found problems.
 
+After loading and validating your Theory file, DALT provides a REPL prompt where you can test transforming formula by applying Definitions, Axioms, Lemmas, and Theorems.
+
 ### Metamath
 DALT is heavily inspired by [Metamath](https://metamath.org) and even supports most Metamath proofs directly (as shown on the Metamath web pages, not as entered into a Metamath *.mm files). DALTs sole power, like Metamath, is substitution. The differences from Metamath are:  
 
@@ -78,4 +80,47 @@ Open '(' and Close ')' Parenthesis are required to establish operator precendenc
 All uppercase Greek (Α to Ω (U0391 to U03A9)) and Latin (A to Z) characters are Constants.  
 All lowercase Greek (α to ω (U03B1 to U03C9)) and Latin (a to z) characters are Variables.  
 
+## REPL
 
+After DALT completes loading/validating a Theory file, it presents a read-eval-print loop where you can test formula transformations using the following commands.
+
+### l or list
+
+Lists formula you've entered thus far.
+<pre>
+]l
+1: a
+2: a→(b→a)
+3: b→a
+</pre>
+
+### c or clear
+
+Clears the list.
+
+### h or hypothesis
+
+Enter a formula to append to the list.
+
+<pre>
+]h a
+]h a→(b→a)
+</pre>
+
+### d or definition, a or axiom, l or lemma, t or theorem
+
+Add a Definition, Axiom, Lemma, or Theorem to the list. If the identified formula contains one or more Hypothesis, indicate formulas already in the list to satisfy these Hypothesis and the named formula will be transformed based on Unification with your Hypothesis.
+
+<pre>
+]l
+1: a
+2: a→(b→a)
+]a ax-mp 1 2
+]l
+1: a
+2: a→(b→a)
+3: b→a
+</pre>
+
+### exit
+Quit DALT.
