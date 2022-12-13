@@ -1,0 +1,57 @@
+# UTF-8 (Unicode) Compose sequences
+#
+# Select Mathematical and Greek characters for use with DALT
+
+include "%L"
+
+<Multi_key> <minus> <less> : "↔" 
+<Multi_key> <minus> <greater> : "→" 
+<Multi_key> <less> <less> : "∧" 
+<Multi_key> <greater> <greater> : "∨" 
+<Multi_key> <m> <a> : "∀" 
+<Multi_key> <m> <e> : "∃" 
+<Multi_key> <m> <w> : "∄" 
+<Multi_key> <m> <3> : "∈" 
+<Multi_key> <m> <asterisk> : "×" 
+<Multi_key> <m> <minus> : "−" 
+<Multi_key> <m> <s> : "⊂" 
+<Multi_key> <m> <p> : "⊆" 
+<Multi_key> <m> <o> : "∘" 
+<Multi_key> <equal> <slash> : "≠" 
+<Multi_key> <comma> <minus> : "¬" 
+
+<Multi_key> <g> <a> : "α"
+<Multi_key> <g> <b> : "β"
+<Multi_key> <g> <g> : "γ"
+<Multi_key> <g> <d> : "δ"
+<Multi_key> <g> <3> : "ε" # note! 
+<Multi_key> <g> <z> : "ζ"
+<Multi_key> <g> <e> : "η"
+<Multi_key> <g> <h> : "θ" # note!
+<Multi_key> <g> <i> : "ι"
+<Multi_key> <g> <k> : "κ"
+<Multi_key> <g> <l> : "λ"
+<Multi_key> <g> <m> : "μ"
+<Multi_key> <g> <n> : "ν"
+<Multi_key> <g> <x> : "ξ"
+# note: no omicron
+<Multi_key> <g> <p> : "π"
+<Multi_key> <g> <r> : "ρ"
+<Multi_key> <g> <s> : "σ"
+<Multi_key> <g> <t> : "τ"
+<Multi_key> <g> <u> : "ψ"
+<Multi_key> <g> <f> : "φ" # note!
+<Multi_key> <g> <c> : "χ"
+<Multi_key> <g> <o> : "ω"
+
+
+<Multi_key> <g> <G> : "Γ"
+<Multi_key> <g> <D> : "Δ"
+<Multi_key> <g> <H> : "Θ"
+<Multi_key> <g> <L> : "Λ"
+<Multi_key> <g> <X> : "Ξ"
+<Multi_key> <g> <P> : "Π"
+<Multi_key> <g> <S> : "Σ"
+<Multi_key> <g> <F> : "Φ"
+<Multi_key> <g> <U> : "Ψ"
+<Multi_key> <g> <O> : "Ω"

@@ -72,13 +72,17 @@ Let's examine the above Lemma line by line:
 
 ### Mathematical Symbols
 ∀ U2200, ∃ U2203, ∄ U2204, − U2212, and ¬ U00AC are all left-associative Unary Operators.  
-+, -, × U00D7, /, ^, ∧ U2227, ∨ U2228, ',', ∘ U2218, :, ∈ U2208, ⊂, ⊆ are left associative Binary Operators.  
++, -, × U00D7, /, ^, ∧ U2227, ∨ U2228, ',', ∘ U2218, :, ∈ U2208, ⊂ U2282, ⊆ U2286 are left associative Binary Operators.  
 → U2192, ↔ U2194, =, ≠ U2260 are Connectives, a type of (yes, left associative) Binary Operator with high precedence. Connectives are identified as such to avoid the need to prioritize them with parenthesis.  
 Open '(' and Close ')' Parenthesis are required to establish operator precendence.  
+
+See the Compose section for an .XCompose file and instructions on using a Compose key with custom Compose options.  
 
 ### Greek and Latin Letters
 All uppercase Greek (Α to Ω (U0391 to U03A9)) and Latin (A to Z) characters are Constants.  
 All lowercase Greek (α to ω (U03B1 to U03C9)) and Latin (a to z) characters are Variables.  
+
+See the Compose section for an .XCompose file and instructions on using a Compose key with custom Compose options.  
 
 ## REPL
 
@@ -124,3 +128,16 @@ Add a Definition, Axiom, Lemma, or Theorem to the list. If the identified formul
 
 ### exit
 Quit DALT.
+
+## Compose
+
+Linux users (and others, but I don't have instructions for other OSs) can enable a Compose key on their keyboard and use a custom Compose file to simplify entering unicode characters. The file .XCompose in this project is my own custom Compose file placed in my Home folder. This file includes my system's Compose file and adds new Compose options supporting all of the Unicode characters needed by DALT. The .XCompose file indicates the key combinations for each character.
+
+In this example from .XCompose, Multi_Key refers to your Compose key (I use the right ALT key). So if I type right-ALT, let go of that key and then type the MINUS (-) key and then GREATER (>) key the implies character (right arrow, →) is inserted. 
+<pre>
+&lt;Multi_key&gt; &lt;minus&gt; &lt;greater&gt; : "→"
+</pre>
+
+This is much simpler then remembering Unicode numbers and fewer key clicks, too.
+
+If you run Gnome, you can select and enable a Compose key in Settings. For other desktops, it's likely similar but you may have to use Google. 
