@@ -1,0 +1,20 @@
+THEORY Brian's Elements
+
+AXIOM n_app                   -- x
+  HYPOTHESIS                  -- (φ^0)∘x
+AXIOM successor               -- x
+  HYPOTHESIS                  -- (S^x)∘0
+AXIOM add                     -- (S^y)∘x
+  HYPOTHESIS                  -- x+y
+
+THEOREM add_id_rt             -- x
+  HYPOTHESIS                  -- x+0
+  AXIOM add 1                 -- (S^0)∘x
+  AXIOM n_app 2               -- x
+  QED
+
+THEOREM add_id_lt             -- x
+  HYPOTHESIS                  -- 0+x
+  AXIOM add 1                 -- (S^x)∘0
+  AXIOM successor 2           -- x
+  QED

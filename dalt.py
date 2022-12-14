@@ -5,7 +5,7 @@ import enum, sys
 
 DEBUG=True
 COLWIDTH=30
-DEFAULTTHEORYFILE='propcalculus.dalt'
+DEFAULTTHEORYFILE='theory.dalt'
 theoryfile=''
 
 ANSIESC='\033'
