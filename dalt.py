@@ -543,7 +543,7 @@ def loadTheory(filename, language):
                 continue
               postulateformula=postulateast.getFormula(False)
               if not postulateast.equivalent(formulaast):
-                print(f'# {RED}ERROR{RESET} provided formula is not equivalent to {formulaname} {colorizeFormula(formula)}')
+                print(f'# {RED}ERROR{RESET} transformed formula {colorizeFormula(postulateformula)} is not equivalent to {formulaname} {colorizeFormula(formula)}')
               if len(postulateentry)>1:
                 try:
                   postulatesteps=postulateentry[1]
@@ -558,11 +558,11 @@ def loadTheory(filename, language):
                       refformulaast=formulaToAST(refformula, language)
                       posformulaast=formulaToAST(h[1], language)
                       if not posformulaast.equivalent(refformulaast):
-                        print(f'# {RED}ERROR{RESET} proof step {int(steprefs[pstep]-1)} is not equivalent to {h[1]}')
+                        print(f'# {RED}ERROR{RESET} proof step {int(steprefs[pstep]-1)} is not equivalent to {colorizeFormula(h[1])}')
                         continue
                       un=posformulaast.unify(refformulaast)
                       if un is None:
-                        print(f'# {RED}ERROR{RESET} {refformula} cannot be unified with {h[1]}')
+                        print(f'# {RED}ERROR{RESET} {colorizeFormula(refformula)} cannot be unified with {colorizeFormula(h[1])}')
                         continue
                       unifier.extend(un)
                       pstep+=1
@@ -579,7 +579,7 @@ def loadTheory(filename, language):
             case 'QED':
               print(f'  {TEAL}QED{RESET}')
               if theoremformula!=proofsteps[-1][1]:
-                print(f'# {RED}ERROR{RESET} Assertion {theoremformula} is not supported by proof {colorizeFormula(proofsteps[-1][1])}')
+                print(f'# {RED}ERROR{RESET} Assertion {colorizeFormula(theoremformula)} is not supported by proof {colorizeFormula(proofsteps[-1][1])}')
               theory[prooftype][theoremname]=[theoremformula, proofsteps]
               pass
             case _:
@@ -643,11 +643,11 @@ def repl(theory, language):
                 refformulaast=formulaToAST(refformula, language)
                 posformulaast=formulaToAST(h[1], language)
                 if not posformulaast.equivalent(refformulaast):
-                  print(f'# {RED}ERROR{RESET} proof step {int(steprefs[pstep]-1)} is not equivalent to {h[1]}')
+                  print(f'# {RED}ERROR{RESET} proof step {int(steprefs[pstep]-1)} is not equivalent to {colorizeFormula(h[1])}')
                   continue
                 un=posformulaast.unify(refformulaast)
                 if un is None:
-                  print(f'# {RED}ERROR{RESET} {refformula} cannot be unified with {h[1]}')
+                  print(f'# {RED}ERROR{RESET} {colorizeFormula(refformula)} cannot be unified with {colorizeFormula(h[1])}')
                   continue
                 unifier.extend(un)
                 pstep+=1
