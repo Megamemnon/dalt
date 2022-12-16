@@ -522,6 +522,19 @@ def colorizeFormula(formula):
       newformula+=c
   return newformula
 
+def confirmInduction(formula1, formula2, formula3, zero, var, svar, language):
+  formula1ast=formulaToAST(formula1, language)
+  formula2ast=formulaToAST(formula2, language)
+  formula3ast=formulaToAST(formula3, language)
+  f2f1=formula2ast.equivalent(formula1ast)
+  f2f3=formula2ast.equivalent(formula3ast)
+  z=zero in formula1
+  v=var in formula2
+  sv=svar in formula3
+  if f2f1 and f2f3 and z and v and sv:
+    return True
+  return False
+
 def loadTheory(filename, language):
   f=open(filename,'r')
   if not f:
@@ -645,40 +658,41 @@ def loadTheory(filename, language):
               if not postulateast.equivalent(formulaast):
                 print(f'# {RED}ERROR{RESET} transformed formula {colorizeFormula(postulateformula)} is not equivalent to {formulaname} {colorizeFormula(formula)}')
               if len(postulateentry)>1:
-                try:
-                  postulatesteps=postulateentry[1]
-                  x=tline.find(t[1])+len(t[1])
-                  steprefs=tline[x:dashes].split()
-                  pstep=0
-                  unifier=[]
-                  for h in postulatesteps:
-                    if h[0]=='HYPOTHESIS':
-                      x=int(steprefs[pstep])-1
-                      refformula=proofsteps[x][1]
-                      refformulaast=formulaToAST(refformula, language)
-                      posformulaast=formulaToAST(h[1], language)
-                      if not posformulaast.equivalent(refformulaast):
-                        print(f'# {RED}ERROR{RESET} proof step {int(steprefs[pstep])} is not equivalent to {colorizeFormula(h[1])}')
-                        continue
-                      un=posformulaast.unify(refformulaast)
-                      if un is None:
-                        print(f'# {RED}ERROR{RESET} {colorizeFormula(refformula)} cannot be unified with {colorizeFormula(h[1])}')
-                        continue
-                      unifier.extend(un)
-                      pstep+=1
-                  unifier.extend(postulateast.unify(formulaast))
-                  uerrors=getUnifierErrors(unifier)
-                  if uerrors!=[]:
-                    ue=getUnifierString(uerrors)
-                    print(f'# {RED}ERROR{RESET} Inconsistent Unifiers between Hypothesis(es) and provided Formula: {ue}')
-                    continue
-                except:
-                  print(f'# {RED}ERROR{RESET} Unable to process proof steps for line {tline[:dashes].strip()}')
+                postulatesteps=postulateentry[1]
+                if postulatesteps[-1][0]!='QEDBY':
+                  try:
+                    x=tline.find(t[1])+len(t[1])
+                    steprefs=tline[x:dashes].split()
+                    pstep=0
+                    unifier=[]
+                    for h in postulatesteps:
+                      if h[0]=='HYPOTHESIS':
+                        x=int(steprefs[pstep])-1
+                        refformula=proofsteps[x][1]
+                        refformulaast=formulaToAST(refformula, language)
+                        posformulaast=formulaToAST(h[1], language)
+                        if not posformulaast.equivalent(refformulaast):
+                          print(f'# {RED}ERROR{RESET} proof step {int(steprefs[pstep])} is not equivalent to {colorizeFormula(h[1])}')
+                          continue
+                        un=posformulaast.unify(refformulaast)
+                        if un is None:
+                          print(f'# {RED}ERROR{RESET} {colorizeFormula(refformula)} cannot be unified with {colorizeFormula(h[1])}')
+                          continue
+                        unifier.extend(un)
+                        pstep+=1
+                    unifier.extend(postulateast.unify(formulaast))
+                    uerrors=getUnifierErrors(unifier)
+                    if uerrors!=[]:
+                      ue=getUnifierString(uerrors)
+                      print(f'# {RED}ERROR{RESET} Inconsistent Unifiers between Hypothesis(es) and provided Formula: {ue}')
+                      continue
+                  except:
+                    print(f'# {RED}ERROR{RESET} Unable to process proof steps for line {tline[:dashes].strip()}')
               proofsteps.append([tline[:dashes].strip(), formula])
               print(f'  {TEAL}{t[0]}{RESET} {tline[len(t[0]):dashes].strip()}{chr(0x20)*(COLWIDTH-(len(t[0])+len(tline[len(t[0]):dashes].strip())+3))}-- {colorizeFormula(formula)}')
             case 'SUBTERM':
               if len(t)<6:
-                print(f'# {RED}ERROR{RESET} insufficient parameters to utilize EQ')
+                print(f'# {RED}ERROR{RESET} insufficient parameters to utilize SUBTERM')
               formula=tline[dashes+2:].replace('\t','').strip()
               formulaast=formulaToAST(formula, language)
               if formulaast is None:
@@ -695,7 +709,7 @@ def loadTheory(filename, language):
                 print(f'# {RED}ERROR{RESET} Proof Step {pstep + 1} does not exist')
                 continue 
               if len(postulateentry)==1:
-                print(f'# {RED}ERROR{RESET} {postulatename} does not have a Hypothesis and cannot form an equality')
+                print(f'# {RED}ERROR{RESET} {postulatename} does not have a Hypothesis and cannot form a substitution')
                 continue 
               postulatesteps=postulateentry[1]
               hypocount=0
@@ -706,59 +720,90 @@ def loadTheory(filename, language):
                   if hypocount==1:
                     hypothesis=h[1]
                   else:
-                    print(f'# {RED}ERROR{RESET} {postulatename} has more than one Hypothesis and cannot form an equality')
+                    print(f'# {RED}ERROR{RESET} {postulatename} has more than one Hypothesis and cannot form a substitution')
                     continue
               equality=f'({hypothesis})=({postulateentry[0]})'
               if not verifyApplication(proofsteps[pstep][1], equality, formula, language):
                 print(f'# {RED}ERROR{RESET} Equality {equality} applied to {proofsteps[pstep][1]} doesn\'t yield {formula}')
               proofsteps.append([tline[:dashes].strip(), formula])
               print(f'  {TEAL}{t[0]}{RESET} {tline[len(t[0]):dashes].strip()}{chr(0x20)*(COLWIDTH-(len(t[0])+len(tline[len(t[0]):dashes].strip())+3))}-- {colorizeFormula(formula)}')              
+            case 'INDUCTION':
+              if len(t)<9:
+                print(f'# {RED}ERROR{RESET} insufficient parameters to utilize INDUCTION')
+              formula=tline[dashes+2:].replace('\t','').strip()
+              formulaast=formulaToAST(formula, language)
+              if formulaast is None:
+                continue
+              formula=formulaast.getFormula(False)
+              try:
+                s1=int(t[1])-1
+                s2=int(t[2])-1
+                s3=int(t[3])-1
+                f1=proofsteps[s1][1]
+                f2=proofsteps[s2][1]
+                f3=proofsteps[s3][1]
+                if theoremformula!=f2:
+                  print(f'# {RED}ERROR{RESET} Assertion must be 2nd Induction formula')
+                if not confirmInduction(f1, f2, f3, t[4],t[5],t[6], language):
+                  print(f'# {RED}ERROR{RESET} failed to confirm Induction')
+              except:
+                print(f'# {RED}ERROR{RESET} invalid Induction parameters')
+              proofsteps.append([tline[:dashes].strip(),f2])
+              print(f'  {TEAL}INDUCTION{RESET} {s1+1} {s2+2} {s3+3} {t[4]} {t[5]} {t[6]}{chr(0x20)*(COLWIDTH-(len(t[1])+len(t[2])+len(t[3])+len(t[4])+len(t[5])+len(t[6])+17))}-- {colorizeFormula(formula)}')
             case 'QED':
-              print(f'  {TEAL}QED{RESET}')
               if theoremformula!=proofsteps[-1][1]:
                 print(f'# {RED}ERROR{RESET} Assertion {colorizeFormula(theoremformula)} is not supported by proof {colorizeFormula(proofsteps[-1][1])}')
+              proofsteps.append([t[0], ''])
               theory[prooftype][theoremname]=[theoremformula, proofsteps]
-              pass
+              print(f'  {TEAL}QED{RESET}')
             case 'QEDBY':
-              postulatetype=t[1]
-              postulatename=t[2]
-              if postulatename not in theory[postulatetype+'S']:
-                print(f'# {RED}ERROR{RESET}:{postulatename} not found in {t[1]}S dictionary')
-                continue
-              postulateentry=theory[t[1]+'S'][postulatename]
-              postulateformula=postulateentry[0]
-              postulateast=formulaToAST(postulateformula, language)
-              if postulateast is None:
-                print(f'# {RED}ERROR{RESET}:{postulatename} {colorizeFormula(postulateformula)} cannot be parsed')
-                continue
-              postulateformula=postulateast.getFormula(False)
-              formula=proofsteps[-1][1]
-              formulaast=formulaToAST(formula, language)
-              if len(postulateentry)==1:
-                equalityast=postulateast
-                equality=postulateformula
+              if t[1]=='INDUCTION':
+                if theoremformula!=proofsteps[-1][1]:
+                  print(f'# {RED}ERROR{RESET} Assertion {colorizeFormula(theoremformula)} is not supported by proof {colorizeFormula(proofsteps[-1][1])}')
+                proofsteps.append([t[0],t[1]])
+                theory[prooftype][theoremname]=[theoremformula, proofsteps]
+                print(f'  {TEAL}QEDBY INDUCTION{RESET}')
               else:
-                postulatesteps=postulateentry[1]
-                hypocount=0
-                hypothesis=''
-                for h in postulatesteps:
-                  if h[0]=='HYPOTHESIS':
-                    hypocount+=1
-                    if hypocount==1:
-                      hypothesis=h[1]
-                    else:
-                      print(f'# {RED}ERROR{RESET} {postulatename} has more than one Hypothesis and cannot form an equality')
-                      continue
-                equalityast=formulaToAST(f'({hypothesis})=({postulateformula})', language)
-                if equalityast is None:
-                  print(f'# {RED}ERROR{RESET} {colorizeFormula(hypothesis+"="+postulateformula)} cannot be parsed')
+                postulatetype=t[1]
+                postulatename=t[2]
+                if postulatename not in theory[postulatetype+'S']:
+                  print(f'# {RED}ERROR{RESET}:{postulatename} not found in {t[1]}S dictionary')
                   continue
-                equality=equalityast.getFormula(False)                    
-              if not equalityast.equivalent(formulaast):
-                print(f'# {RED}ERROR{RESET} transformed formula {colorizeFormula(postulateformula)} is not equivalent to {formulaname} {colorizeFormula(formula)}')
-                continue
-              theory[prooftype][theoremname]=[theoremformula, proofsteps]
-              print(f'  {TEAL}QEDBY {postulatetype}{RESET} {postulatename}')
+                postulateentry=theory[t[1]+'S'][postulatename]
+                postulateformula=postulateentry[0]
+                postulateast=formulaToAST(postulateformula, language)
+                if postulateast is None:
+                  print(f'# {RED}ERROR{RESET}:{postulatename} {colorizeFormula(postulateformula)} cannot be parsed')
+                  continue
+                postulateformula=postulateast.getFormula(False)
+                formula=proofsteps[-1][1]
+                formulaast=formulaToAST(formula, language)
+                if len(postulateentry)==1:
+                  equalityast=postulateast
+                  equality=postulateformula
+                else:
+                  postulatesteps=postulateentry[1]
+                  hypocount=0
+                  hypothesis=''
+                  for h in postulatesteps:
+                    if h[0]=='HYPOTHESIS':
+                      hypocount+=1
+                      if hypocount==1:
+                        hypothesis=h[1]
+                      else:
+                        print(f'# {RED}ERROR{RESET} {postulatename} has more than one Hypothesis and cannot form an equality')
+                        continue
+                  equalityast=formulaToAST(f'({hypothesis})=({postulateformula})', language)
+                  if equalityast is None:
+                    print(f'# {RED}ERROR{RESET} {colorizeFormula(hypothesis+"="+postulateformula)} cannot be parsed')
+                    continue
+                  equality=equalityast.getFormula(False)                    
+                if not equalityast.equivalent(formulaast):
+                  print(f'# {RED}ERROR{RESET} transformed formula {colorizeFormula(postulateformula)} is not equivalent to {formulaname} {colorizeFormula(formula)}')
+                  continue
+                proofsteps.append([t[0],tline[len(t[0])+1:]])
+                theory[prooftype][theoremname]=[theoremformula, proofsteps]
+                print(f'  {TEAL}QEDBY {postulatetype}{RESET} {postulatename}')
             case _:
               if tline[0]!='#':
                 print(f'# {tline}')

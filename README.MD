@@ -18,7 +18,8 @@ DALT is heavily inspired by [Metamath](https://metamath.org) and even supports m
 
 1. DALT files are formatted similarly to proofs.  
 2. DALT uses unicode Greek characters and mathematical symbols.
-3. Running a DALT file through the DALT application produces a replacement DALT files with comments on any existing errors.  
+3. Running a DALT file through the DALT application produces a replacement DALT files with comments on any existing errors.
+4. DALT includes additional Proof commands allowing substitution of sub terms and a built-in Induction mechanism.
 
 ## Language
 
@@ -73,15 +74,39 @@ Let's examine the above Lemma line by line:
 #### Proof Commands
 ##### HYPOTHESIS
 Enables the manual entry of a statement, which is not supported by a prior Assertion.  
-##### DEF|AXIOM|LEMMA|THEOREM
+##### DEF | AXIOM | LEMMA | THEOREM
 Adds a Definition, Axiom, Lemma, or Theorem to the proof steps.  
 If the named Assertion includes one or more Hypothesises, you must identify prior proof steps by number to satisfy those Hypothesises in the order in which they occur. Those identified proof steps are unified with the Hypothesises of the named element and the identified Assertion is transformed using the same variable substitutions and added to the Proof Steps.  
-##### SUBTERM DEF|AXIOM|LEMMA|THEOREM
-Like DEF|AXIOM|LEMMA|THEOREM but only prior Assertions with a single Hypothesis may be used. A Subterm in the prior Proof Step, identified by number, is unified with the named Assertion's Hypothesis and the named Assertion is transformed with the same variable substitutions, replacing the Subterm. You provide the final statement; the system will verify your statement is a valid transformation of the prior Proof Step by cycling through its terms and making substitutions. Only one Subterm can be modified in this fashion. If multiple Subterms need to be transformed, multiple applications of this proof command are required.
+##### SUBTERM DEF | AXIOM | LEMMA | THEOREM
+Like DEF | AXIOM | LEMMA | THEOREM but only prior Assertions with a single Hypothesis may be used. A Subterm in the prior Proof Step, identified by number, is unified with the named Assertion's Hypothesis and the named Assertion is transformed with the same variable substitutions, replacing the Subterm. You provide the final statement; the system will verify your statement is a valid transformation of the prior Proof Step by cycling through its terms and making substitutions. Only one Subterm can be modified in this fashion. If multiple Subterms need to be transformed, multiple applications of this proof command are required.  
+The following example of SUBTERM usage is from theory.dalt. SUBTERM is used twice to transform a single term within a prior proof step with AXIOM add1, which simply states 'a+0' can be replaced by 'a'. In proof step 2, 'a' unifies with 'y'. In proof step 3, 'a' unifies with '(x+y)'. 
+<pre>
+AXIOM add1                  -- a
+  HYPOTHESIS                -- a+0
+
+LEMMA add_assoc_1           -- ((x+y)+0)=(x+(y+0))
+  HYPOTHESIS                -- ((x+y)+0)=(x+(y+0))
+  SUBTERM AXIOM add1 1      -- ((x+y)+0)=(x+y)
+  SUBTERM AXIOM add1 2      -- (x+y)=(x+y)
+  QEDBY AXIOM id
+</pre>
+##### INDUCTION 
+DALT's built-in Induction confirmation command requires six parameters: 3 prior proof steps by number, the 0, the variable, and the successor. The three indicated formulas will be confirmed as equivalent with the first containing the 0, the second containing the variable, and the third containing the successor. The second formula must match the Assertion. Induction should be followed immediately by QEDBY INDUCTION.  
+In the following example, the 4th proof step uses DALT's built-in INDUCTION and identified proof steps 1, 2, and 3 as the 0 formula, variable formula, and successor formula. the final 3 parameters of the INDUCTION command identify the 0, variable, and successor as they occur in the respective formulas.
+<pre>
+THEOREM add_assoc           -- ((x+y)+z)=(x+(y+z))
+  LEMMA add_assoc_1         -- ((x+y)+0)=(x+(y+0))
+  HYPOTHESIS                -- ((x+y)+z)=(x+(y+z))
+  LEMMA add_assoc_2 2       -- ((x+y)+(S∘z))=(x+(y+(S∘z)))
+  INDUCTION 1 2 3 0 z S∘z   -- ((x+y)+z)=(x+(y+z))
+  QEDBY INDUCTION
+</pre>
 ##### QED
 Concludes the proof; system will verify the final proof step matches the Assertion and then add the Lemma/Theorem to the appropriate dictionary.  
-##### QEDBY DEF|AXIOM|LEMMA|THEOREM
-Concludes the proof by confirming the final proof step matches the identified Definition, Axiom, Lemma, or Theorem. The system will then verify the final proof step matches the Assertion and then add the Lemma/Theorem to the appropriate dictionary.  
+##### QEDBY DEF | AXIOM | LEMMA | THEOREM
+Concludes the proof by confirming the final proof step matches the identified Definition, Axiom, Lemma, or Theorem. The system will then verify the final proof step matches the Assertion and then add the Lemma/Theorem to the appropriate dictionary.
+##### QEDBY INDUCTION
+This command concludes a proof that uses the system's INDUCTION command in the prior step.
 ### Mathematical Symbols
 ∀ U2200, ∃ U2203, ∄ U2204, − U2212, and ¬ U00AC are all left-associative Unary Operators.  
 +, -, × U00D7, /, ^, ∧ U2227, ∨ U2228, ',', ∘ U2218, :, ∈ U2208, ⊂ U2282, ⊆ U2286 are left associative Binary Operators.  

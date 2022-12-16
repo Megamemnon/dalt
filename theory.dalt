@@ -53,4 +53,10 @@ LEMMA add_assoc_2           -- ((x+y)+(S∘z))=(x+(y+(S∘z)))
   SUBTERM AXIOM add2a 4     -- ((x+y)+(S∘z))=(x+(y+(S∘z)))
   QED
 
+THEOREM add_assoc           -- ((x+y)+z)=(x+(y+z))
+  LEMMA add_assoc_1         -- ((x+y)+0)=(x+(y+0))
+  HYPOTHESIS                -- ((x+y)+z)=(x+(y+z))
+  LEMMA add_assoc_2 2       -- ((x+y)+(S∘z))=(x+(y+(S∘z)))
+  INDUCTION 1 2 3 0 z S∘z   -- ((x+y)+z)=(x+(y+z))
+  QEDBY INDUCTION
 
