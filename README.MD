@@ -11,15 +11,20 @@ The DALT proof strategy is to add formula to your proof from earlier postulated 
 
 After writing up a Theory in a DALT file, you run the DALT application to validate the theory. Application output is also in the form of a DALT file and comments are included describing any found problems.
 
-After loading and validating your Theory file, DALT provides a REPL prompt where you can test transforming formula by applying Definitions, Axioms, Lemmas, and Theorems.
+DALT offers a REPL prompt where you can test transforming formula by applying Definitions, Axioms, Lemmas, and Theorems.
+ 
+We hope DALT eventually simplifies proof development while maintaining a suitable level of rigor and is suitable for use prototyping proofs that will eventually undergo greater rigor as needs require.
 
 ### Metamath
-DALT is heavily inspired by [Metamath](https://metamath.org) and even supports most Metamath proofs directly (as shown on the Metamath web pages, not as entered into a Metamath *.mm files). DALTs sole power, like Metamath, is substitution. The differences from Metamath are:  
+DALT is heavily inspired by [Metamath](https://metamath.org) and even supports most Metamath proofs directly (as shown on the Metamath web pages, not as entered into a Metamath *.mm files). DALTs key power, like Metamath, is substitution. The differences from Metamath are:  
 
 1. DALT files are formatted similarly to proofs.  
 2. DALT uses unicode Greek characters and mathematical symbols.
 3. Running a DALT file through the DALT application produces a replacement DALT files with comments on any existing errors.
-4. DALT includes additional Proof commands allowing substitution of sub terms and a built-in Induction mechanism.
+4. DALT allowing applying a previously defined statement directly to a Subterm of a proof step, whereas Metamath always applies substitutions at the statement/proof step level.
+5. DALT includes an Induction verification routine allowing you to prove the 0 case, and the Successor of 'n' case (while including the 'n' case as a Hypothesis) and directly confirm you've satisfied requirements of Induction.
+
+New functionality beyond what Metamath provides may be essential to making a useful proof assistant. The Metamath documentation indicates it requires much more detail than most mathematicians use, but in reality it imposes this greater level of detail in order to avoid the need for any built-in inference capabilities. However, this approach results in theorems such as [pm2.21d](https://us.metamath.org/mpeuni/pm2.21d.html) which requires an essential context to avoid the risk of conflating variables between proof steps. Some of that risk is also present in DALT but with fewer steps.  
 
 ## Language
 
@@ -79,6 +84,7 @@ Adds a Definition, Axiom, Lemma, or Theorem to the proof steps.
 If the named Assertion includes one or more Hypothesises, you must identify prior proof steps by number to satisfy those Hypothesises in the order in which they occur. Those identified proof steps are unified with the Hypothesises of the named element and the identified Assertion is transformed using the same variable substitutions and added to the Proof Steps.  
 ##### SUBTERM DEF | AXIOM | LEMMA | THEOREM
 Like DEF | AXIOM | LEMMA | THEOREM but only prior Assertions with a single Hypothesis may be used. A Subterm in the prior Proof Step, identified by number, is unified with the named Assertion's Hypothesis and the named Assertion is transformed with the same variable substitutions, replacing the Subterm. You provide the final statement; the system will verify your statement is a valid transformation of the prior Proof Step by cycling through its terms and making substitutions. Only one Subterm can be modified in this fashion. If multiple Subterms need to be transformed, multiple applications of this proof command are required.  
+
 The following example of SUBTERM usage is from theory.dalt. SUBTERM is used twice to transform a single term within a prior proof step with AXIOM add1, which simply states 'a+0' can be replaced by 'a'. In proof step 2, 'a' unifies with 'y'. In proof step 3, 'a' unifies with '(x+y)'. 
 <pre>
 AXIOM add1                  -- a
@@ -92,6 +98,7 @@ LEMMA add_assoc_1           -- ((x+y)+0)=(x+(y+0))
 </pre>
 ##### INDUCTION 
 DALT's built-in Induction confirmation command requires six parameters: 3 prior proof steps by number, the 0, the variable, and the successor. The three indicated formulas will be confirmed as equivalent with the first containing the 0, the second containing the variable, and the third containing the successor. The second formula must match the Assertion. Induction should be followed immediately by QEDBY INDUCTION.  
+
 In the following example, the 4th proof step uses DALT's built-in INDUCTION and identified proof steps 1, 2, and 3 as the 0 formula, variable formula, and successor formula. the final 3 parameters of the INDUCTION command identify the 0, variable, and successor as they occur in the respective formulas.
 <pre>
 THEOREM add_assoc           -- ((x+y)+z)=(x+(y+z))
@@ -109,21 +116,23 @@ Concludes the proof by confirming the final proof step matches the identified De
 This command concludes a proof that uses the system's INDUCTION command in the prior step.
 ### Mathematical Symbols
 ∀ U2200, ∃ U2203, ∄ U2204, − U2212, and ¬ U00AC are all left-associative Unary Operators.  
+
 +, -, × U00D7, /, ^, ∧ U2227, ∨ U2228, ',', ∘ U2218, :, ∈ U2208, ⊂ U2282, ⊆ U2286 are left associative Binary Operators.  
+
 → U2192, ↔ U2194, =, ≠ U2260 are Connectives, a type of (yes, left associative) Binary Operator with high precedence. Connectives are identified as such to avoid the need to prioritize them with parenthesis.  
+
 Open '(' and Close ')' Parenthesis are required to establish operator precendence.  
 
 See the Compose section for an .XCompose file and instructions on using a Compose key with custom Compose options.  
 
 ### Greek and Latin Letters
-All uppercase Greek (Α to Ω (U0391 to U03A9)) and Latin (A to Z) characters are Constants.  
-All lowercase Greek (α to ω (U03B1 to U03C9)) and Latin (a to z) characters are Variables.  
+All uppercase Greek (Α to Ω (U0391 to U03A9)) and Latin (A to Z) characters are Constants. All lowercase Greek (α to ω (U03B1 to U03C9)) and Latin (a to z) characters are Variables.  
 
 See the Compose section for an .XCompose file and instructions on using a Compose key with custom Compose options.  
 
 ## REPL
 
-After DALT completes loading/validating a Theory file, it presents a read-eval-print loop where you can test formula transformations using the following commands.
+If the command line paramter "-r" is present, DALT presents a read-eval-print loop where you can test formula transformations using the following commands, after loading the identified Theory.
 
 ### l or list
 
