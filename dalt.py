@@ -3,11 +3,7 @@
 
 import enum, sys
 
-DEBUG=True
 COLWIDTH=30
-DEFAULTTHEORYFILE='theory.dalt'
-theoryfile=''
-
 ANSIESC='\033'
 RESET=ANSIESC+'[0m'
 VIOLET=ANSIESC+'[38;5;91m'
@@ -712,7 +708,7 @@ def loadTheory(filename, language):
                   else:
                     print(f'# {RED}ERROR{RESET} {postulatename} has more than one Hypothesis and cannot form an equality')
                     continue
-              equality=hypothesis+'='+postulateentry[0]
+              equality=f'({hypothesis})=({postulateentry[0]})'
               if not verifyApplication(proofsteps[pstep][1], equality, formula, language):
                 print(f'# {RED}ERROR{RESET} Equality {equality} applied to {proofsteps[pstep][1]} doesn\'t yield {formula}')
               proofsteps.append([tline[:dashes].strip(), formula])
@@ -738,11 +734,31 @@ def loadTheory(filename, language):
               postulateformula=postulateast.getFormula(False)
               formula=proofsteps[-1][1]
               formulaast=formulaToAST(formula, language)
-              if not postulateast.equivalent(formulaast):
+              if len(postulateentry)==1:
+                equalityast=postulateast
+                equality=postulateformula
+              else:
+                postulatesteps=postulateentry[1]
+                hypocount=0
+                hypothesis=''
+                for h in postulatesteps:
+                  if h[0]=='HYPOTHESIS':
+                    hypocount+=1
+                    if hypocount==1:
+                      hypothesis=h[1]
+                    else:
+                      print(f'# {RED}ERROR{RESET} {postulatename} has more than one Hypothesis and cannot form an equality')
+                      continue
+                equalityast=formulaToAST(f'({hypothesis})=({postulateformula})', language)
+                if equalityast is None:
+                  print(f'# {RED}ERROR{RESET} {colorizeFormula(hypothesis+"="+postulateformula)} cannot be parsed')
+                  continue
+                equality=equalityast.getFormula(False)                    
+              if not equalityast.equivalent(formulaast):
                 print(f'# {RED}ERROR{RESET} transformed formula {colorizeFormula(postulateformula)} is not equivalent to {formulaname} {colorizeFormula(formula)}')
                 continue
               theory[prooftype][theoremname]=[theoremformula, proofsteps]
-              print(f'{  TEAL}QEDBY {postulatetype}{RESET} {postulatename}')
+              print(f'  {TEAL}QEDBY {postulatetype}{RESET} {postulatename}')
             case _:
               if tline[0]!='#':
                 print(f'# {tline}')
@@ -874,29 +890,24 @@ def repl(theory, language):
         print(f'{colorizeFormula(postulateformula)}')
         formula.append(postulateformula)
 
-    
-
 def main():
-  global DEBUG, DEFAULTTHEORYFILE, theoryfile
   print(f'{BLUE}DALT 0.2\nCopyright (c) 2022 Brian O\'Dell{RESET}')
-  if DEBUG:
-    t=DEFAULTTHEORYFILE
-  else:
-    usage=f'{ORANGE}usage:{sys.argv[0]} language=mylanguage theory=mytheory{RESET}'
-    if len(sys.argv)<3:
-      print(usage)
-      sys.exit(1)
-    if sys.argv[1][:9]!='language=':
-      print(usage)
-      sys.exit(1)
-    l=sys.argv[1][9:]
-    if sys.argv[2][:7]!='theory=':
-      print(usage)
-      sys.exit(1)
-    t=sys.argv[2][7:]
+  replarg=False
+  usage=f'{ORANGE}usage:{sys.argv[0]} theory=mytheory.dalt [-r]{RESET}'
+  if len(sys.argv)<2:
+    print(usage)
+    sys.exit(1)
+  if sys.argv[1][:7]!='theory=':
+    print(usage)
+    sys.exit(1)
+  t=sys.argv[1][7:]
+  if len(sys.argv)>=3:
+    if sys.argv[2]=='-r':
+      replarg=True
   theoryfile=t
   theory=loadTheory(theoryfile, LANGUAGE)
-  repl(theory, LANGUAGE)
+  if replarg:
+    repl(theory, LANGUAGE)
 
 if __name__=='__main__':
   main()

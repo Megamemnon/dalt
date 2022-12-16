@@ -9,6 +9,7 @@
       "type": "python",
       "request": "launch",
       "program": "${workspaceFolder}/dalt.py",
+      "args": ["theory=theory.dalt"],
       "console": "integratedTerminal",
       "justMyCode": true
     }
