@@ -70,6 +70,18 @@ Let's examine the above Lemma line by line:
 4. The Axiom Modus Ponens is applied. This Axiom has two Hypothesises and the "1 2" on this line indicates the interpreter should use the 1st statement in the current proof to satisfy Hypothesis 1 and the 2nd statement in the current proof to satisfy Hypothesis 2. ax-1's first Hypothesis is simply Phi; this proof says use Phi; simple enough. But ax-1's second Hypothesis is Psi implies Phi φ→ψ and this proof says use φ→(ψ→φ). The interpreter will Unify these to statements and determine the Axiom's Psi is equivalent to the proof's ψ→φ. So, the formula on the right side of this line must be ψ→φ, otherwise the interpreter would identify in an error.
 5. QED notifies the interpreter the proof is finished. The interpreter verifies the Assertion is equal to the final statement in the proof and stores it in the appropriate dictionary for future use.
 
+#### Proof Commands
+##### HYPOTHESIS
+Enables the manual entry of a statement, which is not supported by a prior Assertion.  
+##### DEF|AXIOM|LEMMA|THEOREM
+Adds a Definition, Axiom, Lemma, or Theorem to the proof steps.  
+If the named Assertion includes one or more Hypothesises, you must identify prior proof steps by number to satisfy those Hypothesises in the order in which they occur. Those identified proof steps are unified with the Hypothesises of the named element and the identified Assertion is transformed using the same variable substitutions and added to the Proof Steps.  
+##### SUBTERM DEF|AXIOM|LEMMA|THEOREM
+Like DEF|AXIOM|LEMMA|THEOREM but only prior Assertions with a single Hypothesis may be used. A Subterm in the prior Proof Step, identified by number, is unified with the named Assertion's Hypothesis and the named Assertion is transformed with the same variable substitutions, replacing the Subterm. You provide the final statement; the system will verify your statement is a valid transformation of the prior Proof Step by cycling through its terms and making substitutions. Only one Subterm can be modified in this fashion. If multiple Subterms need to be transformed, multiple applications of this proof command are required.
+##### QED
+Concludes the proof; system will verify the final proof step matches the Assertion and then add the Lemma/Theorem to the appropriate dictionary.  
+##### QEDBY DEF|AXIOM|LEMMA|THEOREM
+Concludes the proof by confirming the final proof step matches the identified Definition, Axiom, Lemma, or Theorem. The system will then verify the final proof step matches the Assertion and then add the Lemma/Theorem to the appropriate dictionary.  
 ### Mathematical Symbols
 ∀ U2200, ∃ U2203, ∄ U2204, − U2212, and ¬ U00AC are all left-associative Unary Operators.  
 +, -, × U00D7, /, ^, ∧ U2227, ∨ U2228, ',', ∘ U2218, :, ∈ U2208, ⊂ U2282, ⊆ U2286 are left associative Binary Operators.  
@@ -125,6 +137,10 @@ Add a Definition, Axiom, Lemma, or Theorem to the list. If the identified formul
 2: a→(b→a)
 3: b→a
 </pre>
+
+### s or subterm
+
+TODO
 
 ### exit
 Quit DALT.

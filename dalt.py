@@ -47,6 +47,81 @@ class TokenType(enum.Enum):
   parens=10
   listmarker=11
 
+def getCharacterType(glyph):
+  symbols=[chr(unicode) for unicode in list(range(ord('∀'),ord('⋿')+1))]
+  symbols.extend(['→','↔','¬','≠','×'])
+  symbols.extend([chr(unicode) for unicode in list(range(ord('!'),ord('/')+1))])
+  symbols.extend([chr(unicode) for unicode in list(range(ord(':'),ord('@')+1))])
+  symbols.extend([chr(unicode) for unicode in list(range(ord('['),ord('`')+1))])
+  symbols.extend([chr(unicode) for unicode in list(range(ord('{'),ord('~')+1))])
+  digit=[chr(unicode) for unicode in list(range(ord('0'),ord('9')+1))]
+  greekUpper=[chr(unicode) for unicode in list(range(ord('Α'),ord('Ω')+1))]
+  greekLower=[chr(unicode) for unicode in list(range(ord('α'),ord('ω')+1))]
+  latinUpper=[chr(unicode) for unicode in list(range(ord('A'),ord('Z')+1))]
+  latinLower=[chr(unicode) for unicode in list(range(ord('a'),ord('z')+1))]
+  if glyph in ['∅']:
+    return CharacterType.digit
+  if glyph in symbols:
+    return CharacterType.symbol
+  if glyph in digit:
+    return CharacterType.digit    
+  if glyph in greekLower:
+    return CharacterType.greekLower
+  if glyph in greekUpper:
+    return CharacterType.greekUpper
+  if glyph in latinLower:
+    return CharacterType.latinLower
+  if glyph in latinUpper:
+    return CharacterType.latinUpper
+  return None
+
+def isIdentifierCharacter(glyph):
+  gtype=getCharacterType(glyph)
+  if gtype is not None \
+    and gtype!=CharacterType.symbol:
+    return True
+  return False
+
+def getTokenType(token, language):
+  t=getCharacterType(token)
+  if t==CharacterType.symbol:
+    if token in language['unary operators']:
+      return TokenType.unop
+    if token in language['binary operators']:
+      return TokenType.binop
+    for enc in language['parens']:
+      if token==enc[0]:
+        return TokenType.parenopen
+      if token==enc[1]:
+        return TokenType.parenclose
+    for enc in language['listmarkers']:
+      if token==enc[0]:
+        return TokenType.listmarkeropen
+      if token==enc[1]:
+        return TokenType.listmarkerclose
+    if token in language['connectives']:
+      return TokenType.connective
+  else:
+    if t==CharacterType.greekLower or t==CharacterType.latinLower:
+      return TokenType.variable
+    if t==CharacterType.greekUpper or t==CharacterType.latinUpper:
+      return TokenType.atom
+    if t==CharacterType.digit:
+      return TokenType.atom
+  return None
+
+def getMatchingParenOpen(parenclose, language):
+  for x in language['parens']:
+    if x[1]==parenclose:
+      return x[0]
+  return None
+
+def getMatchingListMarkerOpen(listmarkerclose, language):
+  for x in language['listmarkers']:
+    if x[1]==listmarkerclose:
+      return x[0]
+  return None
+
 class ASTNode():
   def __init__(self, nodetype, symbol, left, right, uniqueid):
     self.nodetype=nodetype
@@ -140,6 +215,21 @@ class ASTNode():
       unifier.extend(r)
     return unifier
 
+  def resolve(self, astnode):
+    resolution=[]
+    x=self.unify(astnode)
+    if x is not None:
+      resolution.append([self, x])
+    if self.left is not None:
+      x=self.left.resolve(astnode)
+      if x is not None:
+        resolution.extend(x)
+    if self.right is not None:
+      x=self.right.resolve(astnode)
+      if x is not None:
+        resolution.extend(x)
+    return resolution
+
   def replaceVariable(self, var, newNode):
     l=False
     r=False
@@ -158,6 +248,30 @@ class ASTNode():
     if l or r:
       return True
     return False
+
+  def replaceNode(self, currentNode, newNode):
+    if self.left is not None:
+      if self.left.uniqueid==currentNode.uniqueid:
+        self.left=newNode
+        return True
+      if self.left.replaceNode(currentNode, newNode)==True:
+        return True
+    if self.right is not None:
+      if self.right.uniqueid==currentNode.uniqueid:
+        self.right=newNode
+        return True
+      if self.right.replaceNode(currentNode, newNode)==True:
+        return True
+    return False
+
+  def copy(self):
+    left=None
+    right=None
+    if self.left is not None:
+      left=self.left.copy()
+    if self.right is not None:
+      right=self.right.copy()
+    return ASTNode(self.nodetype, self.symbol, left, right, self.uniqueid)
 
 def getUnifierString(unifier):
   u='{'
@@ -201,80 +315,71 @@ def getUnifierErrors(unifier):
           uclean.append(ue)
   return uclean
 
-def getCharacterType(glyph):
-  symbols=[chr(unicode) for unicode in list(range(ord('∀'),ord('⋿')+1))]
-  symbols.extend(['→','↔','¬','≠','×'])
-  symbols.extend([chr(unicode) for unicode in list(range(ord('!'),ord('/')+1))])
-  symbols.extend([chr(unicode) for unicode in list(range(ord(':'),ord('@')+1))])
-  symbols.extend([chr(unicode) for unicode in list(range(ord('['),ord('`')+1))])
-  symbols.extend([chr(unicode) for unicode in list(range(ord('{'),ord('~')+1))])
-  digit=[chr(unicode) for unicode in list(range(ord('0'),ord('9')+1))]
-  greekUpper=[chr(unicode) for unicode in list(range(ord('Α'),ord('Ω')+1))]
-  greekLower=[chr(unicode) for unicode in list(range(ord('α'),ord('ω')+1))]
-  latinUpper=[chr(unicode) for unicode in list(range(ord('A'),ord('Z')+1))]
-  latinLower=[chr(unicode) for unicode in list(range(ord('a'),ord('z')+1))]
-  if glyph in ['∅']:
-    return CharacterType.digit
-  if glyph in symbols:
-    return CharacterType.symbol
-  if glyph in digit:
-    return CharacterType.digit    
-  if glyph in greekLower:
-    return CharacterType.greekLower
-  if glyph in greekUpper:
-    return CharacterType.greekUpper
-  if glyph in latinLower:
-    return CharacterType.latinLower
-  if glyph in latinUpper:
-    return CharacterType.latinUpper
-  return None
 
-def isIdentifierCharacter(glyph):
-  gtype=getCharacterType(glyph)
-  if gtype is not None \
-    and gtype!=CharacterType.symbol:
-    return True
-  return False
-
-def getTokenType(token, language):
-  t=getCharacterType(token)
-  if t==CharacterType.symbol:
-    if token in language['unary operators']:
-      return TokenType.unop
-    if token in language['binary operators']:
-      return TokenType.binop
-    for enc in language['parens']:
-      if token==enc[0]:
-        return TokenType.parenopen
-      if token==enc[1]:
-        return TokenType.parenclose
-    for enc in language['listmarkers']:
-      if token==enc[0]:
-        return TokenType.listmarkeropen
-      if token==enc[1]:
-        return TokenType.listmarkerclose
-    if token in language['connectives']:
-      return TokenType.connective
+def getMatchedSubstitutionNodes(formula, substterm, language, reversed=False):
+  fnode=formulaToAST(formula, language)
+  sterm=formulaToAST(substterm, language)
+  if fnode is None or sterm is None:
+    return None
+  if sterm.nodetype!=TokenType.connective:
+    print(f'# {RED}ERROR{RESET} invalid subsitution formula')
+    return None
+  if reversed:
+    fterm=sterm.right
   else:
-    if t==CharacterType.greekLower or t==CharacterType.latinLower:
-      return TokenType.variable
-    if t==CharacterType.greekUpper or t==CharacterType.latinUpper:
-      return TokenType.atom
-    if t==CharacterType.digit:
-      return TokenType.atom
-  return None
+    fterm=sterm.left
+  result=[fnode]
+  result.append(fnode.resolve(fterm))
+  return result
 
-def getMatchingParenOpen(parenclose, language):
-  for x in language['parens']:
-    if x[1]==parenclose:
-      return x[0]
-  return None
+def substitute(formulaAST, substterm, matchnode, matchunifier, language, reversed=False):
+  sterm=formulaToAST(substterm, language)
+  if sterm is None:
+    return None
+  if reversed:
+    replacementterm=sterm.left
+  else:
+    replacementterm=sterm.right
+  for tpl in matchunifier:
+    if replacementterm.nodetype==TokenType.variable and replacementterm.symbol==tpl[0].symbol:
+      replacementterm=tpl[1]
+    else:
+      replacementterm.replaceVariable(tpl[0].symbol, tpl[1])
+  replacementterm.uniqueid=matchnode.uniqueid
+  if formulaAST.uniqueid==replacementterm.uniqueid:
+    formulaAST=replacementterm
+  else:
+    formulaAST.replaceNode(matchnode, replacementterm)
+  return formulaAST.getFormula(False)
 
-def getMatchingListMarkerOpen(listmarkerclose, language):
-  for x in language['listmarkers']:
-    if x[1]==listmarkerclose:
-      return x[0]
-  return None
+def apply(formula, equality, termtomatch, language, reversed):
+  resolution=getMatchedSubstitutionNodes(formula, equality, language, reversed)
+  if resolution is None:
+    return None
+  forumlaAST=resolution[0]
+  matchnodesunifiers=resolution[1]
+  for c, mnu in enumerate(matchnodesunifiers):
+    matchedterm=mnu[0].getFormula(False)
+    if matchedterm==termtomatch:
+      formula=substitute(forumlaAST, equality, mnu[0], mnu[1], language, reversed)
+      return formula
+
+def verifyApplication(formula, equality, userapplied, language):
+  userappliedast=formulaToAST(userapplied, language)
+  resolutions=getMatchedSubstitutionNodes(formula, equality, language, False)
+  if resolutions is None:
+    return False
+  matchnodesunifiers=resolutions[1]
+  for mnu in matchnodesunifiers:
+    formulaast=resolutions[0].copy()
+    newformula=substitute(formulaast, equality, mnu[0], mnu[1], language, False)
+    if newformula==userapplied:
+      return True
+    newformulaast=formulaToAST(newformula, language)
+    if newformulaast is not None and userappliedast is not None:
+      if newformulaast.equivalent(userappliedast):
+        return True
+  return False
 
 def formulaToAST(formula, language):
 
@@ -470,21 +575,20 @@ def loadTheory(filename, language):
           hypothesises=[]
           if i+1<len(lines):
             i+=1
-            if len(lines[i].strip().split())==0:
-              continue
-            while lines[i].strip().split()[0]=='HYPOTHESIS':
-              dashes=lines[i].find('--')
-              formula=lines[i][dashes+2:].replace('\t','').strip()
-              formulaast=formulaToAST(formula, language)
-              formula=formulaast.getFormula(False)
-              hypothesises.append(['HYPOTHESIS',formula])
-              print(f'  {TEAL}HYPOTHESIS{RESET}{chr(0x20)*(COLWIDTH-12)}-- {colorizeFormula(formula)}')
-              if i+1<len(lines):
-                i+=1
-              else:
-                break
-              if len(lines[i].strip().split())==0:
-                break
+            if len(lines[i].strip().split())!=0:
+              while lines[i].strip().split()[0]=='HYPOTHESIS':
+                dashes=lines[i].find('--')
+                formula=lines[i][dashes+2:].replace('\t','').strip()
+                formulaast=formulaToAST(formula, language)
+                formula=formulaast.getFormula(False)
+                hypothesises.append(['HYPOTHESIS',formula])
+                print(f'  {TEAL}HYPOTHESIS{RESET}{chr(0x20)*(COLWIDTH-12)}-- {colorizeFormula(formula)}')
+                if i+1<len(lines):
+                  i+=1
+                else:
+                  break
+                if len(lines[i].strip().split())==0:
+                  break
             i-=1
           if len(hypothesises)==0:
             theory[l[0]+'S'][postulatename]=[postulateformula]
@@ -558,7 +662,7 @@ def loadTheory(filename, language):
                       refformulaast=formulaToAST(refformula, language)
                       posformulaast=formulaToAST(h[1], language)
                       if not posformulaast.equivalent(refformulaast):
-                        print(f'# {RED}ERROR{RESET} proof step {int(steprefs[pstep]-1)} is not equivalent to {colorizeFormula(h[1])}')
+                        print(f'# {RED}ERROR{RESET} proof step {int(steprefs[pstep])} is not equivalent to {colorizeFormula(h[1])}')
                         continue
                       un=posformulaast.unify(refformulaast)
                       if un is None:
@@ -576,12 +680,69 @@ def loadTheory(filename, language):
                   print(f'# {RED}ERROR{RESET} Unable to process proof steps for line {tline[:dashes].strip()}')
               proofsteps.append([tline[:dashes].strip(), formula])
               print(f'  {TEAL}{t[0]}{RESET} {tline[len(t[0]):dashes].strip()}{chr(0x20)*(COLWIDTH-(len(t[0])+len(tline[len(t[0]):dashes].strip())+3))}-- {colorizeFormula(formula)}')
+            case 'SUBTERM':
+              if len(t)<6:
+                print(f'# {RED}ERROR{RESET} insufficient parameters to utilize EQ')
+              formula=tline[dashes+2:].replace('\t','').strip()
+              formulaast=formulaToAST(formula, language)
+              if formulaast is None:
+                continue
+              formula=formulaast.getFormula(False)
+              postulatetype=t[1]
+              postulatename=t[2]
+              if postulatename not in theory[t[1]+'S']:
+                print(f'# {RED}ERROR{RESET}:{postulatename} not found in {t[1]}S dictionary')
+                continue
+              postulateentry=theory[t[1]+'S'][postulatename]
+              pstep=int(t[3])-1
+              if pstep<0 or pstep>len(proofsteps):
+                print(f'# {RED}ERROR{RESET} Proof Step {pstep + 1} does not exist')
+                continue 
+              if len(postulateentry)==1:
+                print(f'# {RED}ERROR{RESET} {postulatename} does not have a Hypothesis and cannot form an equality')
+                continue 
+              postulatesteps=postulateentry[1]
+              hypocount=0
+              hypothesis=''
+              for h in postulatesteps:
+                if h[0]=='HYPOTHESIS':
+                  hypocount+=1
+                  if hypocount==1:
+                    hypothesis=h[1]
+                  else:
+                    print(f'# {RED}ERROR{RESET} {postulatename} has more than one Hypothesis and cannot form an equality')
+                    continue
+              equality=hypothesis+'='+postulateentry[0]
+              if not verifyApplication(proofsteps[pstep][1], equality, formula, language):
+                print(f'# {RED}ERROR{RESET} Equality {equality} applied to {proofsteps[pstep][1]} doesn\'t yield {formula}')
+              proofsteps.append([tline[:dashes].strip(), formula])
+              print(f'  {TEAL}{t[0]}{RESET} {tline[len(t[0]):dashes].strip()}{chr(0x20)*(COLWIDTH-(len(t[0])+len(tline[len(t[0]):dashes].strip())+3))}-- {colorizeFormula(formula)}')              
             case 'QED':
               print(f'  {TEAL}QED{RESET}')
               if theoremformula!=proofsteps[-1][1]:
                 print(f'# {RED}ERROR{RESET} Assertion {colorizeFormula(theoremformula)} is not supported by proof {colorizeFormula(proofsteps[-1][1])}')
               theory[prooftype][theoremname]=[theoremformula, proofsteps]
               pass
+            case 'QEDBY':
+              postulatetype=t[1]
+              postulatename=t[2]
+              if postulatename not in theory[postulatetype+'S']:
+                print(f'# {RED}ERROR{RESET}:{postulatename} not found in {t[1]}S dictionary')
+                continue
+              postulateentry=theory[t[1]+'S'][postulatename]
+              postulateformula=postulateentry[0]
+              postulateast=formulaToAST(postulateformula, language)
+              if postulateast is None:
+                print(f'# {RED}ERROR{RESET}:{postulatename} {colorizeFormula(postulateformula)} cannot be parsed')
+                continue
+              postulateformula=postulateast.getFormula(False)
+              formula=proofsteps[-1][1]
+              formulaast=formulaToAST(formula, language)
+              if not postulateast.equivalent(formulaast):
+                print(f'# {RED}ERROR{RESET} transformed formula {colorizeFormula(postulateformula)} is not equivalent to {formulaname} {colorizeFormula(formula)}')
+                continue
+              theory[prooftype][theoremname]=[theoremformula, proofsteps]
+              print(f'{  TEAL}QEDBY {postulatetype}{RESET} {postulatename}')
             case _:
               if tline[0]!='#':
                 print(f'# {tline}')
@@ -609,6 +770,51 @@ def repl(theory, language):
         formula=[]
       case 'h'|'hypothesis':
         formula.append(userstr[len(ustr):].strip())
+      case 's'|'subterm':
+        match ustr[1]:
+          case 'a':
+            postulatetype='AXIOMS'
+          case 'd':
+            postulatetype='DEFS'
+          case 'l':
+            postulatetype='LEMMAS'
+          case 't':
+            postulatetype='THEOREMS'
+        postulatename=ustr[2]
+        if postulatename not in theory[postulatetype]:
+          print(f'# {RED}ERROR{RESET}:{postulatename} not found in {postulatetype} dictionary')
+          continue
+        postulateentry=theory[postulatetype][postulatename]
+        postulateformula=postulateentry[0]
+        postulateast=formulaToAST(postulateformula, language)
+        if postulateast is None:
+          print(f'# {RED}ERROR{RESET}:{postulatename} {colorizeFormula(postulateformula)} cannot be parsed')
+          continue
+        postulateformula=postulateast.getFormula(False)
+        if len(postulateentry)==1:
+          print(f'# {RED}ERROR{RESET} {postulatename} does not have a Hypothesis and cannot form an equality')
+          continue 
+        postulatesteps=postulateentry[1]
+        hypocount=0
+        hypothesis=''
+        for h in postulatesteps:
+          if h[0]=='HYPOTHESIS':
+            hypocount+=1
+            if hypocount==1:
+              hypothesis=h[1]
+            else:
+              print(f'# {RED}ERROR{RESET} {postulatename} has more than one Hypothesis and cannot form an equality')
+              continue
+        equality=hypothesis+'='+postulateentry[0]
+        fstep=int(ustr[3])-1
+        if fstep<0 or fstep>len(formula):
+          print(f'# {RED}ERROR{RESET} formula {fstep} doesn\'t exist')
+          continue
+        selectedformula=formula[fstep]
+        termtomatch=ustr[4]
+        x=apply(selectedformula, equality, termtomatch, language, False)
+        print(f'{colorizeFormula(x)}')
+        formula.append(x)
       case 'a'|'axiom'|'d'|'def'|'l'|'lemma'|'t'|'theorem':
         match ustr[0][0]:
           case 'a':
@@ -665,6 +871,7 @@ def repl(theory, language):
             else:
               postulateast.replaceVariable(u[1].symbol, u[0])
           postulateformula=postulateast.getFormula(False)
+        print(f'{colorizeFormula(postulateformula)}')
         formula.append(postulateformula)
 
     

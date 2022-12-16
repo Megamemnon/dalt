@@ -1,20 +1,45 @@
-THEORY Brian's Elements
+THEORY Peano Arithmetic
 
-AXIOM n_app                   -- x
-  HYPOTHESIS                  -- (φ^0)∘x
-AXIOM successor               -- x
-  HYPOTHESIS                  -- (S^x)∘0
-AXIOM add                     -- (S^y)∘x
-  HYPOTHESIS                  -- x+y
+# Second Order Theory of Peano Arithmetic 
+# with Addition and Multiplication as Definitions
 
-THEOREM add_id_rt             -- x
-  HYPOTHESIS                  -- x+0
-  AXIOM add 1                 -- (S^0)∘x
-  AXIOM n_app 2               -- x
-  QED
+AXIOM nat0                  -- 0∈ω
 
-THEOREM add_id_lt             -- x
-  HYPOTHESIS                  -- 0+x
-  AXIOM add 1                 -- (S^x)∘0
-  AXIOM successor 2           -- x
-  QED
+AXIOM 0notsuccessor         -- ¬(n∈ω)
+  HYPOTHESIS                -- (S∘n)=0
+
+AXIOM reflexive             -- x
+  HYPOTHESIS                -- x
+
+AXIOM id                    -- x=x
+
+AXIOM symmetric             -- y=x
+  HYPOTHESIS                -- x=y
+
+AXIOM transitive            -- x=z 
+  HYPOTHESIS                -- x=y 
+  HYPOTHESIS                -- y=z 
+
+AXIOM closed                -- (S∘n)∈ω
+
+AXIOM injectiona            -- (S∘n)=(S∘m)
+  HYPOTHESIS                -- n=m 
+AXIOM injectionb            -- n=m
+  HYPOTHESIS                -- (S∘n)=(S∘m) 
+
+AXIOM induction             -- ∀n∘(φ∘n)
+  HYPOTHESIS                -- φ∘0
+  HYPOTHESIS                -- n∈ω
+  HYPOTHESIS                -- (φ∘n)→(φ∘(S∘n))
+
+AXIOM add1                  -- a
+  HYPOTHESIS                -- a+0
+AXIOM add2                  -- S∘(a+b)
+  HYPOTHESIS                -- a+(S∘b)
+
+LEMMA add_assoc_1           -- ((x+y)+0)=(x+(y+0))
+  HYPOTHESIS                -- ((x+y)+0)=(x+(y+0))
+  SUBTERM AXIOM add1 1      -- ((x+y)+0)=(x+y)
+  SUBTERM AXIOM add1 2      -- (x+y)=(x+y)
+  QEDBY AXIOM id
+
