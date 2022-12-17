@@ -708,6 +708,47 @@ def loadTheory(filename, language):
               if pstep<0 or pstep>len(proofsteps):
                 print(f'# {RED}ERROR{RESET} Proof Step {pstep + 1} does not exist')
                 continue 
+              postulatesteps=postulateentry[1]
+              hypocount=0
+              hypothesis=''
+              for h in postulatesteps:
+                if h[0]=='HYPOTHESIS':
+                  hypocount+=1
+                  if hypocount==1:
+                    hypothesis=h[1]
+                  else:
+                    print(f'# {RED}ERROR{RESET} {postulatename} has more than one Hypothesis and cannot form a substitution')
+                    continue
+              if hypocount==0:
+                postulateast=formulaToAST(postulateentry[0], language)
+                if postulateast is None:
+                  print(f'# {RED}ERROR{RESET}:{postulatename} {colorizeFormula(postulateformula)} cannot be parsed')
+                  continue
+                if postulateast.nodetype==TokenType.connective:
+                  if postulateast.symbol not in ['=','→']:
+                    print(f'# {RED}ERROR{RESET} {postulatename} is neither an Implication nor an Equality and doesn\'t have a Hypothesis')
+                    continue
+                equality=postulateast.getFormula(False)
+              else:
+                equality=f'({hypothesis})=({postulateentry[0]})'
+              if not verifyApplication(proofsteps[pstep][1], equality, formula, language):
+                print(f'# {RED}ERROR{RESET} Equality {equality} applied to {proofsteps[pstep][1]} doesn\'t yield {formula}')
+              proofsteps.append([tline[:dashes].strip(), formula])
+              print(f'  {TEAL}{t[0]}{RESET} {tline[len(t[0]):dashes].strip()}{chr(0x20)*(COLWIDTH-(len(t[0])+len(tline[len(t[0]):dashes].strip())+3))}-- {colorizeFormula(formula)}')              
+            case 'EQUAL'|'IMPLY':
+              if len(t)<3:
+                print(f'# {RED}ERROR{RESET} insufficient parameters to utilize SUBTERM')
+              formula=tline[dashes+2:].replace('\t','').strip()
+              formulaast=formulaToAST(formula, language)
+              if formulaast is None:
+                continue
+              formula=formulaast.getFormula(False)
+              postulatetype=t[1]
+              postulatename=t[2]
+              if postulatename not in theory[t[1]+'S']:
+                print(f'# {RED}ERROR{RESET}:{postulatename} not found in {t[1]}S dictionary')
+                continue
+              postulateentry=theory[t[1]+'S'][postulatename]
               if len(postulateentry)==1:
                 print(f'# {RED}ERROR{RESET} {postulatename} does not have a Hypothesis and cannot form a substitution')
                 continue 
@@ -722,9 +763,13 @@ def loadTheory(filename, language):
                   else:
                     print(f'# {RED}ERROR{RESET} {postulatename} has more than one Hypothesis and cannot form a substitution')
                     continue
-              equality=f'({hypothesis})=({postulateentry[0]})'
-              if not verifyApplication(proofsteps[pstep][1], equality, formula, language):
-                print(f'# {RED}ERROR{RESET} Equality {equality} applied to {proofsteps[pstep][1]} doesn\'t yield {formula}')
+              if t[0]=='EQUAL':
+                equality=f'({hypothesis})=({postulateentry[0]})'
+              else:
+                equality=f'({hypothesis})→({postulateentry[0]})'
+              equalityast=formulaToAST(equality, language)
+              if not equalityast.equivalent(formulaast):
+                print(f'# {RED}ERROR{RESET} Equality {equality} is not equivalent to {formula}')
               proofsteps.append([tline[:dashes].strip(), formula])
               print(f'  {TEAL}{t[0]}{RESET} {tline[len(t[0]):dashes].strip()}{chr(0x20)*(COLWIDTH-(len(t[0])+len(tline[len(t[0]):dashes].strip())+3))}-- {colorizeFormula(formula)}')              
             case 'INDUCTION':

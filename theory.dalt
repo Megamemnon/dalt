@@ -36,8 +36,16 @@ AXIOM add1                  -- a
   HYPOTHESIS                -- a+0
 AXIOM add2                  -- (S∘(a+b))
   HYPOTHESIS                -- a+(S∘b)
-AXIOM add2a                 -- a+(S∘b)
+
+LEMMA add2xeq               -- (S∘(a+b))=(a+(S∘b))
+  EQUAL AXIOM add2          -- (a+(S∘b))=(S∘(a+b))
+  AXIOM symmetric 1         -- (S∘(a+b))=(a+(S∘b))
+  QED
+
+THEOREM add2x               -- a+(S∘b)
   HYPOTHESIS                -- S∘(a+b)
+  SUBTERM LEMMA add2xeq 1   -- a+(S∘b)
+  QED
 
 LEMMA add_assoc_1           -- ((x+y)+0)=(x+(y+0))
   HYPOTHESIS                -- ((x+y)+0)=(x+(y+0))
@@ -48,9 +56,9 @@ LEMMA add_assoc_1           -- ((x+y)+0)=(x+(y+0))
 LEMMA add_assoc_2           -- ((x+y)+(S∘z))=(x+(y+(S∘z)))
   HYPOTHESIS                -- ((x+y)+z)=(x+(y+z))
   AXIOM injectiona 1        -- (S∘((x+y)+z))=(S∘(x+(y+z)))
-  SUBTERM AXIOM add2a 2     -- ((x+y)+(S∘z))=(S∘(x+(y+z)))
-  SUBTERM AXIOM add2a 3     -- ((x+y)+(S∘z))=(x+(S∘(y+z)))
-  SUBTERM AXIOM add2a 4     -- ((x+y)+(S∘z))=(x+(y+(S∘z)))
+  SUBTERM THEOREM add2x 2   -- ((x+y)+(S∘z))=(S∘(x+(y+z)))
+  SUBTERM THEOREM add2x 3   -- ((x+y)+(S∘z))=(x+(S∘(y+z)))
+  SUBTERM THEOREM add2x 4   -- ((x+y)+(S∘z))=(x+(y+(S∘z)))
   QED
 
 THEOREM add_assoc           -- ((x+y)+z)=(x+(y+z))

@@ -83,7 +83,7 @@ Enables the manual entry of a statement, which is not supported by a prior Asser
 Adds a Definition, Axiom, Lemma, or Theorem to the proof steps.  
 If the named Assertion includes one or more Hypothesises, you must identify prior proof steps by number to satisfy those Hypothesises in the order in which they occur. Those identified proof steps are unified with the Hypothesises of the named element and the identified Assertion is transformed using the same variable substitutions and added to the Proof Steps.  
 ##### SUBTERM DEF | AXIOM | LEMMA | THEOREM
-Like DEF | AXIOM | LEMMA | THEOREM but only prior Assertions with a single Hypothesis may be used. A Subterm in the prior Proof Step, identified by number, is unified with the named Assertion's Hypothesis and the named Assertion is transformed with the same variable substitutions, replacing the Subterm. You provide the final statement; the system will verify your statement is a valid transformation of the prior Proof Step by cycling through its terms and making substitutions. Only one Subterm can be modified in this fashion. If multiple Subterms need to be transformed, multiple applications of this proof command are required.  
+Like DEF | AXIOM | LEMMA | THEOREM but only prior Assertions with a single Hypothesis or Assertions which are Equalities or Implications with no Hypothesis may be used. A Subterm in the prior Proof Step, identified by number, is unified with the named Assertion's Hypothesis (or left side of the Equality or Implication) and the named Assertion is transformed with the same variable substitutions, replacing the Subterm. You provide the final statement; the system will verify your statement is a valid transformation of the prior Proof Step by cycling through its terms and making substitutions. Only one Subterm can be modified in this fashion. If multiple Subterms need to be transformed, multiple applications of this proof command are required.  
 
 The following example of SUBTERM usage is from theory.dalt. SUBTERM is used twice to transform a single term within a prior proof step with AXIOM add1, which simply states 'a+0' can be replaced by 'a'. In proof step 2, 'a' unifies with 'y'. In proof step 3, 'a' unifies with '(x+y)'. 
 <pre>
@@ -96,6 +96,28 @@ LEMMA add_assoc_1           -- ((x+y)+0)=(x+(y+0))
   SUBTERM AXIOM add1 2      -- (x+y)=(x+y)
   QEDBY AXIOM id
 </pre>
+##### EQUAL | IMPLY
+The Equal and Imply commands require a named Definition, Axiom, Lemma, or Theorem that has a single Hypothesis and returns the Hypothesis and Assertion as an Equality or Implication, respectively.  
+
+In the following example, EQUAL is used to turn the Axiom add2 into an Equality. Then the Symmetric Axiom is used to swap the right and left sides of the Equality.
+<pre>
+AXIOM symmetric             -- y=x
+  HYPOTHESIS                -- x=y
+
+AXIOM add2                  -- (S∘(a+b))
+  HYPOTHESIS                -- a+(S∘b)
+
+LEMMA add2xeq               -- (S∘(a+b))=(a+(S∘b))
+  EQUAL AXIOM add2          -- (a+(S∘b))=(S∘(a+b))
+  AXIOM symmetric 1         -- (S∘(a+b))=(a+(S∘b))
+  QED
+
+THEOREM add2x               -- a+(S∘b)
+  HYPOTHESIS                -- S∘(a+b)
+  SUBTERM LEMMA add2xeq 1   -- a+(S∘b)
+  QED
+</pre>
+Finally, Theorem Add2x provides a reverses version of Axiom Add2.
 ##### INDUCTION 
 DALT's built-in Induction confirmation command requires six parameters: 3 prior proof steps by number, the 0, the variable, and the successor. The three indicated formulas will be confirmed as equivalent with the first containing the 0, the second containing the variable, and the third containing the successor. The second formula must match the Assertion. Induction should be followed immediately by QEDBY INDUCTION.  
 
