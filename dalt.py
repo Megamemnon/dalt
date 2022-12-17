@@ -823,26 +823,34 @@ def loadTheory(filename, language):
                 postulateformula=postulateast.getFormula(False)
                 formula=proofsteps[-1][1]
                 formulaast=formulaToAST(formula, language)
-                if len(postulateentry)==1:
-                  equalityast=postulateast
-                  equality=postulateformula
-                else:
-                  postulatesteps=postulateentry[1]
-                  hypocount=0
-                  hypothesis=''
-                  for h in postulatesteps:
-                    if h[0]=='HYPOTHESIS':
-                      hypocount+=1
-                      if hypocount==1:
-                        hypothesis=h[1]
-                      else:
-                        print(f'# {RED}ERROR{RESET} {postulatename} has more than one Hypothesis and cannot form an equality')
-                        continue
-                  equalityast=formulaToAST(f'({hypothesis})=({postulateformula})', language)
-                  if equalityast is None:
-                    print(f'# {RED}ERROR{RESET} {colorizeFormula(hypothesis+"="+postulateformula)} cannot be parsed')
+                postulatesteps=postulateentry[1]
+                hypocount=0
+                hypothesis=''
+                for h in postulatesteps:
+                  if h[0]=='HYPOTHESIS':
+                    hypocount+=1
+                    if hypocount==1:
+                      hypothesis=h[1]
+                    else:
+                      print(f'# {RED}ERROR{RESET} {postulatename} has more than one Hypothesis and cannot form an equality')
+                      continue
+                if hypocount==0:
+                  postulateast=formulaToAST(postulateentry[0], language)
+                  if postulateast is None:
+                    print(f'# {RED}ERROR{RESET}:{postulatename} {colorizeFormula(postulateformula)} cannot be parsed')
                     continue
-                  equality=equalityast.getFormula(False)                    
+                  if postulateast.nodetype==TokenType.connective:
+                    if postulateast.symbol not in ['=','→']:
+                      print(f'# {RED}ERROR{RESET} {postulatename} is neither an Implication nor an Equality and doesn\'t have a Hypothesis')
+                      continue
+                  equality=postulateast.getFormula(False)
+                  equalityast=formulaToAST(equality, language)
+                else:
+                  equalityast=formulaToAST(f'({hypothesis})=({postulateformula})', language)
+                if equalityast is None:
+                  print(f'# {RED}ERROR{RESET} {colorizeFormula(hypothesis+"="+postulateformula)} cannot be parsed')
+                  continue
+                equality=equalityast.getFormula(False)                    
                 if not equalityast.equivalent(formulaast):
                   print(f'# {RED}ERROR{RESET} transformed formula {colorizeFormula(postulateformula)} is not equivalent to {formulaname} {colorizeFormula(formula)}')
                   continue

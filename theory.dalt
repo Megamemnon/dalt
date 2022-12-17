@@ -11,7 +11,9 @@ AXIOM 0notsuccessor         -- ¬(n∈ω)
 AXIOM reflexive             -- x
   HYPOTHESIS                -- x
 
-AXIOM id                    -- x=x
+THEOREM id                  -- x=x
+  EQUAL AXIOM reflexive     -- x=x
+  QED
 
 AXIOM symmetric             -- y=x
   HYPOTHESIS                -- x=y
@@ -32,6 +34,7 @@ AXIOM induction             -- ∀n∘(φ∘n)
   HYPOTHESIS                -- n∈ω
   HYPOTHESIS                -- (φ∘n)→(φ∘(S∘n))
 
+# Addition
 AXIOM add1                  -- a
   HYPOTHESIS                -- a+0
 AXIOM add2                  -- (S∘(a+b))
@@ -47,12 +50,14 @@ THEOREM add2x               -- a+(S∘b)
   SUBTERM LEMMA add2xeq 1   -- a+(S∘b)
   QED
 
+# Prove Associativity of Addition
+#  The Base Case
 LEMMA add_assoc_1           -- ((x+y)+0)=(x+(y+0))
   HYPOTHESIS                -- ((x+y)+0)=(x+(y+0))
   SUBTERM AXIOM add1 1      -- ((x+y)+0)=(x+y)
   SUBTERM AXIOM add1 2      -- (x+y)=(x+y)
-  QEDBY AXIOM id
-
+  QEDBY THEOREM id
+#  The Induction Case
 LEMMA add_assoc_2           -- ((x+y)+(S∘z))=(x+(y+(S∘z)))
   HYPOTHESIS                -- ((x+y)+z)=(x+(y+z))
   AXIOM injectiona 1        -- (S∘((x+y)+z))=(S∘(x+(y+z)))
@@ -60,11 +65,36 @@ LEMMA add_assoc_2           -- ((x+y)+(S∘z))=(x+(y+(S∘z)))
   SUBTERM THEOREM add2x 3   -- ((x+y)+(S∘z))=(x+(S∘(y+z)))
   SUBTERM THEOREM add2x 4   -- ((x+y)+(S∘z))=(x+(y+(S∘z)))
   QED
-
+#  The Final Proof
 THEOREM add_assoc           -- ((x+y)+z)=(x+(y+z))
   LEMMA add_assoc_1         -- ((x+y)+0)=(x+(y+0))
   HYPOTHESIS                -- ((x+y)+z)=(x+(y+z))
   LEMMA add_assoc_2 2       -- ((x+y)+(S∘z))=(x+(y+(S∘z)))
   INDUCTION 1 2 3 0 z S∘z   -- ((x+y)+z)=(x+(y+z))
   QEDBY INDUCTION
+
+# Prove Commutativity of Addition
+#  The Base Case
+LEMMA add_com_1             -- (0+0)=(0+0)
+  HYPOTHESIS                -- (0+0)=(0+0)
+  SUBTERM AXIOM add1 1      -- 0=(0+0)
+  SUBTERM AXIOM add1 2      -- 0=0
+  QEDBY THEOREM id
+#  The Induction Case
+LEMMA add_com_2             -- (x+0)=(0+x)
+  HYPOTHESIS                -- (x+0)=(0+x)
+  SUBTERM AXIOM add1 1      -- x=(0+x)
+  SUBTERM AXIOM add1 2      -- x=x
+  QEDBY THEOREM id
+#  The Final Proof
+
+# Multiplication
+AXIOM mul1                  -- 0
+  HYPOTHESIS                -- a×0
+AXIOM mul2                  -- (a×b)+a 
+  HYPOTHESIS                -- a×(S∘b)
+
+# Associativity of Multiplication
+
+# Commutativity of Multiplication
 
