@@ -22,9 +22,10 @@ DALT is heavily inspired by [Metamath](https://metamath.org) and even supports m
 2. DALT uses unicode Greek characters and mathematical symbols.
 3. Running a DALT file through the DALT application produces a replacement DALT files with comments on any existing errors.
 4. DALT allowing applying a previously defined statement directly to a Subterm of a proof step, whereas Metamath always applies substitutions at the statement/proof step level.
-5. DALT includes an Induction verification routine allowing you to prove the 0 case, and the Successor of 'n' case (while including the 'n' case as a Hypothesis) and directly confirm you've satisfied requirements of Induction.
+5. DALT allows you to apply a Hypothesis from earlier in your proof to transform a statement/proof step or a subterm of a statement.
+6. DALT includes an Induction verification routine allowing you to prove the 0 case, and the Successor of 'n' case (while including the 'n' case as a Hypothesis) and directly confirm you've satisfied requirements of Induction.
 
-New functionality beyond what Metamath provides may be essential to making a useful proof assistant. The Metamath documentation indicates it requires much more detail than most mathematicians use, but in reality it imposes this greater level of detail in order to avoid the need for any built-in inference capabilities. However, this approach results in theorems such as [pm2.21d](https://us.metamath.org/mpeuni/pm2.21d.html) which requires an essential context to avoid the risk of conflating variables between proof steps. Some of that risk is also present in DALT but with fewer steps.  
+New functionality beyond what Metamath provides may be essential to making a useful proof assistant. The Metamath documentation indicates it requires much more detail than most mathematicians use, but in reality it imposes this greater level of detail in order to avoid the need for any built-in inference capabilities. However, this approach results in theorems such as [pm2.21d (a contradiction implies anything)](https://us.metamath.org/mpeuni/pm2.21d.html) which - apparently - requires an essential context that I don't understand; I don't see how any valid proof should require 'a contradiction proves anything' as a step.   
 
 ## Language
 
