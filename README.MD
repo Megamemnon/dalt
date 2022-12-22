@@ -82,8 +82,10 @@ Enables the manual entry of a statement, which is not supported by a prior Asser
 ##### DEF | AXIOM | LEMMA | THEOREM
 Adds a Definition, Axiom, Lemma, or Theorem to the proof steps.  
 If the named Assertion includes one or more Hypothesises, you must identify prior proof steps by number to satisfy those Hypothesises in the order in which they occur. Those identified proof steps are unified with the Hypothesises of the named element and the identified Assertion is transformed using the same variable substitutions and added to the Proof Steps.  
-##### SUBTERM DEF | AXIOM | LEMMA | THEOREM
+##### SUBTERM DEF | AXIOM | LEMMA | THEOREM | HYPOTHESIS
 Like DEF | AXIOM | LEMMA | THEOREM but only prior Assertions with a single Hypothesis or Assertions which are Equalities or Implications with no Hypothesis may be used. A Subterm in the prior Proof Step, identified by number, is unified with the named Assertion's Hypothesis (or left side of the Equality or Implication) and the named Assertion is transformed with the same variable substitutions, replacing the Subterm. You provide the final statement; the system will verify your statement is a valid transformation of the prior Proof Step by cycling through its terms and making substitutions. Only one Subterm can be modified in this fashion. If multiple Subterms need to be transformed, multiple applications of this proof command are required.  
+
+If your current proof has one or more HYPOTHESIS which are Equalities or Implications, you can use SUBTERM with that/those HYPOTHESIS to transform a statement. The following is an example:
 
 The following example of SUBTERM usage is from theory.dalt. SUBTERM is used twice to transform a single term within a prior proof step with AXIOM add1, which simply states 'a+0' can be replaced by 'a'. In proof step 2, 'a' unifies with 'y'. In proof step 3, 'a' unifies with '(x+y)'. 
 <pre>
@@ -95,6 +97,18 @@ LEMMA add_assoc_1           -- ((x+y)+0)=(x+(y+0))
   SUBTERM AXIOM add1 1      -- ((x+y)+0)=(x+y)
   SUBTERM AXIOM add1 2      -- (x+y)=(x+y)
   QEDBY AXIOM id
+</pre>
+
+If your current proof has one or more HYPOTHESIS which are Equalities or Implications, you can use SUBTERM with that/those HYPOTHESIS to transform a statement. In the following example proof step 4 uses the HYPOTHESIS from proof step 1 to transform proof step 3. Proof step 6 also uses this same HYPOTHESIS to transform proof step 5.
+<pre>
+LEMMA add_com_3             -- (x+(S∘y))=((S∘y)+x)
+  HYPOTHESIS                -- (x+y)=(y+x)
+  AXIOM injectiona 1        -- (S∘(x+y))=(S∘(y+x))
+  SUBTERM THEOREM add2x 2   -- (x+(S∘y))=(S∘(y+x))
+  SUBTERM HYPOTHESIS 1 3    -- (x+(S∘y))=(S∘(x+y))
+  SUBTERM THEOREM add2x 4   -- (x+(S∘y))=(x+(S∘y))
+  SUBTERM HYPOTHESIS 1 5    -- (x+(S∘y))=((S∘y)+x)
+  QED
 </pre>
 ##### EQUAL | IMPLY
 The Equal and Imply commands require a named Definition, Axiom, Lemma, or Theorem that has a single Hypothesis and returns the Hypothesis and Assertion as an Equality or Implication, respectively.  
