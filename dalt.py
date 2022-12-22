@@ -523,6 +523,11 @@ def colorizeFormula(formula):
   return newformula
 
 def confirmInduction(formula1, formula2, formula3, zero, var, svar, language):
+  # confirm Induction has occurred by recreating formulas 1 and 3 from formula2 
+  # by substituting zero and svar for var, respectively
+  # this method still leaves open the possibility of a contrived case 
+  # that isn't actually induction - specifically, the zero, var, and svar are not 
+  # confirmed to be truly a zero, variable and the variable's successor
   formula1ast=formulaToAST(formula1, language)
   formula2ast=formulaToAST(formula2, language)
   formula3ast=formulaToAST(formula3, language)
@@ -544,6 +549,8 @@ def confirmInduction(formula1, formula2, formula3, zero, var, svar, language):
     print(f'# {RED}ERROR{RESET} Third formula should be {colorizeFormula(f3formula)}')
     return False
   return True
+  # Prior code is insufficient because it only confirms the three formulas are equivalent
+  # replacement code above confirms the first and third formulas can be derived from the second formula
   # f2f1=formula2ast.equivalent(formula1ast)
   # f2f3=formula2ast.equivalent(formula3ast)
   # z=zero in formula1
@@ -717,26 +724,37 @@ def loadTheory(filename, language):
                 continue
               formula=formulaast.getFormula(False)
               postulatetype=t[1]
-              postulatename=t[2]
-              if postulatename not in theory[t[1]+'S']:
-                print(f'# {RED}ERROR{RESET}:{postulatename} not found in {t[1]}S dictionary')
-                continue
-              postulateentry=theory[t[1]+'S'][postulatename]
+              if postulatetype=='HYPOTHESIS':
+                prstep=int(t[2])-1
+                if prstep<0 or prstep>len(proofsteps):
+                  print(f'# {RED}ERROR{RESET} Proof Step {prstep + 1} does not exist')
+                  continue
+                if proofsteps[prstep][0]!='HYPOTHESIS':
+                  print(f'# {RED}ERROR{RESET} Proof Step {prstep + 1} is not a HYPOTHESIS')
+                  continue
+                postulateentry=[proofsteps[prstep][1]]
+              else:
+                postulatename=t[2]
+                if postulatename not in theory[t[1]+'S']:
+                  print(f'# {RED}ERROR{RESET}:{postulatename} not found in {t[1]}S dictionary')
+                  continue
+                postulateentry=theory[t[1]+'S'][postulatename]
               pstep=int(t[3])-1
               if pstep<0 or pstep>len(proofsteps):
                 print(f'# {RED}ERROR{RESET} Proof Step {pstep + 1} does not exist')
                 continue 
-              postulatesteps=postulateentry[1]
               hypocount=0
               hypothesis=''
-              for h in postulatesteps:
-                if h[0]=='HYPOTHESIS':
-                  hypocount+=1
-                  if hypocount==1:
-                    hypothesis=h[1]
-                  else:
-                    print(f'# {RED}ERROR{RESET} {postulatename} has more than one Hypothesis and cannot form a substitution')
-                    continue
+              if len(postulateentry)>1:
+                postulatesteps=postulateentry[1]
+                for h in postulatesteps:
+                  if h[0]=='HYPOTHESIS':
+                    hypocount+=1
+                    if hypocount==1:
+                      hypothesis=h[1]
+                    else:
+                      print(f'# {RED}ERROR{RESET} {postulatename} has more than one Hypothesis and cannot form a substitution')
+                      continue
               if hypocount==0:
                 postulateast=formulaToAST(postulateentry[0], language)
                 if postulateast is None:
