@@ -526,14 +526,32 @@ def confirmInduction(formula1, formula2, formula3, zero, var, svar, language):
   formula1ast=formulaToAST(formula1, language)
   formula2ast=formulaToAST(formula2, language)
   formula3ast=formulaToAST(formula3, language)
-  f2f1=formula2ast.equivalent(formula1ast)
-  f2f3=formula2ast.equivalent(formula3ast)
-  z=zero in formula1
-  v=var in formula2
-  sv=svar in formula3
-  if f2f1 and f2f3 and z and v and sv:
-    return True
-  return False
+  formula1fixd=formula1ast.getFormula(False)
+  formula2fixd=formula2ast.getFormula(False)
+  formula3fixd=formula3ast.getFormula(False)
+  f1ast=formula2ast.copy()
+  zeroast=formulaToAST(zero, language)
+  f1ast.replaceVariable(var, zeroast)
+  f3ast=formula2ast.copy()
+  svarast=formulaToAST(svar, language)
+  f3ast.replaceVariable(var, svarast)
+  f1formula=f1ast.getFormula(False)
+  f3formula=f3ast.getFormula(False)
+  if f1formula!=formula1fixd:
+    print(f'# {RED}ERROR{RESET} First formula should be {colorizeFormula(f1formula)}')
+    return False
+  if f3formula!=formula3fixd:
+    print(f'# {RED}ERROR{RESET} Third formula should be {colorizeFormula(f3formula)}')
+    return False
+  return True
+  # f2f1=formula2ast.equivalent(formula1ast)
+  # f2f3=formula2ast.equivalent(formula3ast)
+  # z=zero in formula1
+  # v=var in formula2
+  # sv=svar in formula3
+  # if f2f1 and f2f3 and z and v and sv:
+  #   return True
+  # return False
 
 def loadTheory(filename, language):
   f=open(filename,'r')
@@ -794,7 +812,7 @@ def loadTheory(filename, language):
               except:
                 print(f'# {RED}ERROR{RESET} invalid Induction parameters')
               proofsteps.append([tline[:dashes].strip(),f2])
-              print(f'  {TEAL}INDUCTION{RESET} {s1+1} {s2+2} {s3+3} {t[4]} {t[5]} {t[6]}{chr(0x20)*(COLWIDTH-(len(t[1])+len(t[2])+len(t[3])+len(t[4])+len(t[5])+len(t[6])+17))}-- {colorizeFormula(formula)}')
+              print(f'  {TEAL}INDUCTION{RESET} {s1+1} {s2+1} {s3+1} {t[4]} {t[5]} {t[6]}{chr(0x20)*(COLWIDTH-(len(t[1])+len(t[2])+len(t[3])+len(t[4])+len(t[5])+len(t[6])+17))}-- {colorizeFormula(formula)}')
             case 'QED':
               if theoremformula!=proofsteps[-1][1]:
                 print(f'# {RED}ERROR{RESET} Assertion {colorizeFormula(theoremformula)} is not supported by proof {colorizeFormula(proofsteps[-1][1])}')
