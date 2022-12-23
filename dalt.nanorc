@@ -1,0 +1,10 @@
+## Syntax highlighting for dalt
+
+syntax dalt "\.dalt$"
+comment "#"
+color brightcyan "#.*"
+
+# Keywords.
+color brightmagenta "\<(THEORY|DEF|AXIOM|LEMMA|THEOREM)\>"
+color lagoon "\<(HYPOTHESIS|EQUAL|IMPLY|SUBTERM|INDUCTION|QED|QEDBY)\>"
+color purple "--"

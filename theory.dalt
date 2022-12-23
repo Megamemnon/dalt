@@ -1,3 +1,9 @@
 THEORY Zermelo-Fraenkel
 
-AXIOM             -- {x|(x∈z)}
+AXIOM extensionality             -- ∀x∘(∀y∘(∀z∘(((z∊x)↔(z∊y))→(x=y))))
+AXIOM regularity                 -- ∀x∘((x≠0)→(∃y∘((y∊x)∧((y∩x)=0))))
+AXIOM specification_sch          -- ∀z∘(∀w∘(∃y∘(∀x∘((x∊y)↔((x∊z)∧(φ∘(x,w,z)))))))
+AXIOM pairing                    -- ∀x∘(∀y∘∃z∘((x∊z)∧(y∊z)))
+AXIOM union                      -- ∀F∘(∃A∘(∀Y∘(∀x∘(((x∊Y)∧(Y∊F))→(Y∊A)))))
+AXIOM replacement_sch            -- ∀A∘(∀w∘(∀x∘(((x∊A)→(⋿y∘φ))→∃B∘(∀x∘((x∊A)→(∃y∘((y∊B)∧φ)))))))
+AXIOM infinity                   -- ∃X∘(∃e∘(∀z∘(¬(z∊e)∧(e∊X))∧(∀y∘((y∊X)→((S∘(y))∊X)))))

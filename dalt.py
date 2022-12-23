@@ -17,7 +17,7 @@ PINK=ANSIESC+'[38;5;206m'
 
 
 LANGUAGE={'unary operators':['∀','∃','∄','−','¬'],
-  'binary operators':['+','-','×','/','^','∧','∨',',','∘',':','∈','⊂','⊆'],
+  'binary operators':['+','-','×','/','^','∧','∨',',','∘',':','∊','⊂','⊆','∩','∪'],
   'parens':['()'],
   'listmarkers':['[]'],
   'setmarkers':['{}'],
