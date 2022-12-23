@@ -6,5 +6,5 @@ color brightcyan "#.*"
 
 # Keywords.
 color brightmagenta "\<(THEORY|DEF|AXIOM|LEMMA|THEOREM)\>"
-color lagoon "\<(HYPOTHESIS|EQUAL|IMPLY|SUBTERM|INDUCTION|QED|QEDBY)\>"
-color purple "--"
+color brightcyan "\<(HYPOTHESIS|EQUAL|IMPLY|SUBTERM|INDUCTION|QED|QEDBY)\>"
+color brightmagenta "--"
