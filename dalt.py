@@ -20,7 +20,8 @@ LANGUAGE={'unary operators':['∀','∃','∄','−','¬'],
   'binary operators':['+','-','×','/','^','∧','∨',',','∘',':','∈','⊂','⊆'],
   'parens':['()'],
   'listmarkers':['[]'],
-  'connectives':['→','↔','=','≠']}
+  'setmarkers':['{}'],
+  'connectives':['→','↔','=','≠','|']}
 
 class CharacterType(enum.Enum):
   symbol=1
@@ -42,6 +43,9 @@ class TokenType(enum.Enum):
   listmarkerclose=9
   parens=10
   listmarker=11
+  setmarkeropen=12
+  setmarkerclose=13
+  setmarker=14
 
 def getCharacterType(glyph):
   symbols=[chr(unicode) for unicode in list(range(ord('∀'),ord('⋿')+1))]
@@ -95,6 +99,11 @@ def getTokenType(token, language):
         return TokenType.listmarkeropen
       if token==enc[1]:
         return TokenType.listmarkerclose
+    for enc in language['setmarkers']:
+      if token==enc[0]:
+        return TokenType.setmarkeropen
+      if token==enc[1]:
+        return TokenType.setmarkerclose
     if token in language['connectives']:
       return TokenType.connective
   else:
@@ -106,17 +115,17 @@ def getTokenType(token, language):
       return TokenType.atom
   return None
 
-def getMatchingParenOpen(parenclose, language):
-  for x in language['parens']:
-    if x[1]==parenclose:
-      return x[0]
-  return None
+# def getMatchingParenOpen(parenclose, language):
+#   for x in language['parens']:
+#     if x[1]==parenclose:
+#       return x[0]
+#   return None
 
-def getMatchingListMarkerOpen(listmarkerclose, language):
-  for x in language['listmarkers']:
-    if x[1]==listmarkerclose:
-      return x[0]
-  return None
+# def getMatchingListMarkerOpen(listmarkerclose, language):
+#   for x in language['listmarkers']:
+#     if x[1]==listmarkerclose:
+#       return x[0]
+#   return None
 
 class ASTNode():
   def __init__(self, nodetype, symbol, left, right, uniqueid):
@@ -143,9 +152,13 @@ class ASTNode():
       case TokenType.atom | TokenType.variable:
         f+=self.symbol
       case TokenType.listmarker:
-        f+=self.symbol[0]
+        f+='['
         f+=self.right.getFormula(False)
-        f+=self.symbol[1]
+        f+=']'
+      case TokenType.setmarker:
+        f+='{'
+        f+=self.right.getFormula(False)
+        f+='}'
       case TokenType.connective:
         if paren:
           f+='('
@@ -401,29 +414,27 @@ def formulaToAST(formula, language):
             break
         postfix.append(' ')
         t=getTokenType(c, language)
-      if t==TokenType.parenopen or t==TokenType.listmarkeropen:
+      if t==TokenType.parenopen or t==TokenType.listmarkeropen or t==TokenType.setmarkeropen:
         postfix.append(c)
-      if t==TokenType.parenopen:
         opstack.append(c)
-      if t==TokenType.parenclose:
+      if t==TokenType.parenclose or t==TokenType.listmarkerclose or t==TokenType.setmarkerclose:
+        match t:
+          case TokenType.parenclose:
+            marker=lp
+          case TokenType.listmarkerclose:
+            marker='['
+          case TokenType.setmarkerclose:
+            marker='{'
         c1=opstack.pop()
-        while c1!=lp:
-          postfix.append(c1)
-          c1=opstack.pop()
-        postfix.append(c)
-      if t==TokenType.listmarkeropen:
-        opstack.append(c)
-      if t==TokenType.listmarkerclose:
-        eo=getMatchingListMarkerOpen(c, language)
-        c1=opstack.pop()
-        while c1!=eo:
+        while c1!=marker:
           postfix.append(c1)
           c1=opstack.pop()
         postfix.append(c)
       if t==TokenType.connective or t==TokenType.binop:
         if len(opstack)>0:
           c1=opstack.pop()
-          if c1!=lp and getTokenType(c1, language)!=TokenType.listmarkeropen:
+          if c1!=lp and getTokenType(c1, language)!=TokenType.listmarkeropen \
+            and getTokenType(c1, language)!=TokenType.setmarkeropen:
             postfix.append(c1)
           else:
             opstack.append(c1)
@@ -460,34 +471,42 @@ def formulaToAST(formula, language):
         id+=1
         output.append(node)
         t=getTokenType(c, language)
-      if t==TokenType.listmarkeropen:
-        output.append(c)
       if t==TokenType.binop or t==TokenType.connective:
         right=output.pop()
         left=output.pop()
         node=ASTNode(t, c, left, right, id)
         id+=1
         output.append(node)
-      if t==TokenType.listmarkeropen:
-        node=ASTNode(TokenType.listmarker, language['listmarkers'][0], None, None, id)
+      if t==TokenType.unop:
+        left=output.pop()
+        node=ASTNode(t, c, left, None, id)
+        id+=1
+        output.append(node)
+      if t==TokenType.listmarkeropen or t==TokenType.setmarkeropen:
+        match t:
+          case TokenType.listmarkeropen:
+            markertype=TokenType.listmarker
+          case TokenType.setmarkeropen:
+            markertype=TokenType.setmarker
+        output.append(c)
+        node=ASTNode(markertype, c, None, None, id)
         id+=1
         connectivestack.append(node)
-      if t==TokenType.listmarkerclose:
+      if t==TokenType.listmarkerclose or t==TokenType.setmarkerclose:
+        match t:
+          case TokenType.listmarkerclose:
+            marker='['
+          case TokenType.setmarkerclose:
+            marker='{'
         tmpstack=[]
-        lmo=getMatchingListMarkerOpen(c, language)
         right=output.pop()
-        while right!=lmo:
+        while right!=marker:
           if len(connectivestack)!=0:
             node=connectivestack.pop()
             node.right=right
             tmpstack.append(node)
           right=output.pop()
         output.extend(tmpstack)
-      if t==TokenType.unop:
-        left=output.pop()
-        node=ASTNode(t, c, left, None, id)
-        id+=1
-        output.append(node)
       pfindex+=1
     # Should never have leftovers on the connectivesstack
     while len(connectivestack)!=0:
