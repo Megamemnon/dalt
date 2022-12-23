@@ -1,0 +1,7 @@
+set fill 80
+set linenumbers
+set numbercolor brightcyan,black
+set titlecolor brightcyan,black
+set keycolor brightcyan,black
+set statuscolor brightcyan,black
+set functioncolor brightmagenta,black
