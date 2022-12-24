@@ -9,7 +9,7 @@
       "type": "python",
       "request": "launch",
       "program": "${workspaceFolder}/dalt.py",
-      "args": ["theory=theory.dalt"],
+      "args": ["theory=peano.dalt"],
       "console": "integratedTerminal",
       "justMyCode": true
     }
