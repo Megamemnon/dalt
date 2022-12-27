@@ -1,0 +1,22 @@
+THEORY Euclid's Postulates
+
+# Let φ, ψ, ξ be variables of any type
+
+AXIOM reflexivity                 -- φ=φ
+AXIOM transivity                  -- φ=ψ
+  HYPOTHESIS                      -- φ=ξ
+  HYPOTHESIS                      -- ξ=ψ
+
+# Let A, B, C be variables of type point 
+# Let i, j be variables of type line
+# Let O, Q be variables of type circle
+# let α, β, θ be variables of type angle
+
+AXIOM 2_points_def_line           -- ∀A∘(∀B∘(∃i∘(∀C∘((C≥A)∧(C≤B)∧(C∊i)))))
+AXIOM infinite_line               -- ∀i∘(∃j∘(i∊j))
+AXIOM circle                      -- ∀i∘(∀A∘(⋿Q∘(Q=i⊚A)))
+AXIOM rt_angles                   -- α=β
+  HYPOTHESIS                      -- ∟α
+  HYPOTHESIS                      -- ∟β
+AXIOM parallel                    -- ⋿i∘((A∊i)∧(i∥j))
+  HYPOTHESIS                      -- ¬(A∊j)

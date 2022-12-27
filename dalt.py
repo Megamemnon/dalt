@@ -16,12 +16,12 @@ RED=ANSIESC+'[38;5;160m'
 PINK=ANSIESC+'[38;5;206m'
 
 
-LANGUAGE={'unary operators':['∀','∃','∄','−','¬'],
-  'binary operators':['+','-','×','/','^','∧','∨',',','∘',':','∊','⊂','⊆','∩','∪'],
+LANGUAGE={'unary operators':['∀','∃','∄','−','¬','∣','∟'],
+  'binary operators':['+','-','×','/','^','∧','∨',',','∘',':','∊','⊂','⊆','∩','∪','∥','⊚'],
   'parens':['()'],
   'listmarkers':['[]'],
   'setmarkers':['{}'],
-  'connectives':['→','↔','=','≠','|']}
+  'connectives':['→','↔','=','≠','≌','|']}
 
 class CharacterType(enum.Enum):
   symbol=1
@@ -602,7 +602,7 @@ def loadTheory(filename, language):
   theoremast=None
 
   i=0
-  while i<len(lines):
+  while i<len(lines)-1:
     line=lines[i].strip()
     # if line[-1]=='\n':
     #   line=line[:-1]
