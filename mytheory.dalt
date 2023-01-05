@@ -1,0 +1,57 @@
+THEORY Brian's Elements
+
+
+AXIOM x∅         -- X∅∊B
+AXIOM xα         -- Xα∊B
+AXIOM xω         -- Xω∊B 
+
+AXIOM symmetric  -- y=x
+  HYPOTHESIS     -- x=y
+
+AXIOM 0          -- 0=X∅
+AXIOM 1α         -- 1=Xα
+AXIOM 1          -- 1=Xω
+
+THEOREM 0r          -- X∅=0
+  AXIOM 0           -- 0=X∅
+  AXIOM symmetric 1 -- X∅=0
+  QED
+
+THEOREM 1αr          -- Xα=1
+  AXIOM 1α           -- 1=Xα
+  AXIOM symmetric 1  -- Xα=1
+  QED
+
+AXIOM sx∅        -- (S∘X∅)=Xα
+AXIOM S1         -- Xα,X∅
+  HYPOTHESIS     -- S∘Xω
+AXIOM Sx1        -- #(a,(S∘b)) 
+  HYPOTHESIS     -- S∘(#(a,X∅))
+AXIOM Sx1ω        -- #((S∘a),X∅) 
+  HYPOTHESIS     -- S∘(#(a,Xω))
+
+LEMMA 1+1=10               -- #(1,0)
+  HYPOTHESIS               -- S∘(#(0,1))
+  SUBTERM AXIOM 1 1        -- S∘(#(0,Xω))
+  SUBTERM AXIOM 0 2        -- S∘(#(X∅,Xω))
+  SUBTERM AXIOM Sx1ω 3      -- #((S∘X∅),X∅)
+  SUBTERM AXIOM sx∅ 4      -- #(Xα,X∅)
+  SUBTERM THEOREM 1αr 5    -- #(1,X∅)
+  SUBTERM THEOREM 0r 6     -- #(1,0)
+  QED
+
+LEMMA 11+1=100             -- #((Xα,X∅),X∅)
+  HYPOTHESIS               -- S∘(#(Xα,Xα))
+  SUBTERM AXIOM Sx1ω 1     -- #((S∘Xα),X∅)
+  SUBTERM AXIOM S1 2       -- #((Xα,X∅),X∅)
+  QED
+
+DEF Iter0                  -- ((φ^0)∘x)=x
+DEF IterativeS             -- ((S^x)∘a)=((S^(x-1))∘(S∘a)) 
+DEF Addition               -- a+b=(S^b)∘a
+AXIOM Sub1                 -- (b-1)=a
+  HYPOTHESIS               -- (S∘a)=b
+
+
+
+

@@ -16,7 +16,7 @@ RED=ANSIESC+'[38;5;160m'
 PINK=ANSIESC+'[38;5;206m'
 
 
-LANGUAGE={'unary operators':['∀','∃','∄','−','¬','∣','∟'],
+LANGUAGE={'unary operators':['∀','∃','∄','−','¬','∣','∟','#'],
   'binary operators':['+','-','×','/','^','∧','∨',',','∘',':','∊','⊂','⊆','∩','∪','∥','⊚'],
   'parens':['()'],
   'listmarkers':['[]'],
@@ -1046,14 +1046,11 @@ def repl(theory, language):
 def main():
   print(f'{BLUE}DALT 0.2\nCopyright (c) 2022 Brian O\'Dell{RESET}')
   replarg=False
-  usage=f'{ORANGE}usage:{sys.argv[0]} theory=mytheory.dalt [-r]{RESET}'
+  usage=f'{ORANGE}usage:{sys.argv[0]} mytheory.dalt [-r]{RESET}'
   if len(sys.argv)<2:
     print(usage)
     sys.exit(1)
-  if sys.argv[1][:7]!='theory=':
-    print(usage)
-    sys.exit(1)
-  t=sys.argv[1][7:]
+  t=sys.argv[1]
   if len(sys.argv)>=3:
     if sys.argv[2]=='-r':
       replarg=True
